@@ -476,18 +476,7 @@ function ProjectRow({ p, index }: { p: Project; index: number }) {
   );
 }
 
-  return (
-    <motion.div
-      className="project-row-item group relative border-t border-border overflow-hidden"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {/* ── Row header (click to expand if features exist, else open URL) ── */}
 
-
-// ─── Numbers ──────────────────────────────────────────────────────────────────
 
 function Numbers() {
   const stats = [
