@@ -314,7 +314,7 @@ const projects: Project[] = [
   {
     n: "02",
     name: "Ignite",
-    tags: ["3D Development", "Motion", "Product"],
+    tags: ["Instant Deployment", "Real-time Collaboration", "Enterprise Security"],
     gradient: "from-[#0d0d1a] via-[#1a1032] to-[#050505]",
     year: "2026",
     url: "https://igniteind.netlify.app/",
