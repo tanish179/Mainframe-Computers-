@@ -786,18 +786,18 @@ function PixelPurpose() {
 const testimonials = [
   {
     q: "Working with GrowFrame completely transformed our online presence. We doubled inbound within a quarter.",
-    a: "Isla Reyes",
+    a: "Aarav Mehta",
     r: "CEO, Mainframe Computers",
   },
   {
     q: "The most operationally sharp studio we've worked with. Design, engineering and strategy in one voice.",
-    a: "Marcus Doyle",
-    r: "Founder, Halcyon",
+    a: "Kabir Joshi",
+    r: "Founder, Ignite",
   },
   {
     q: "They obsess over the details clients never see — that's exactly why the ones we do see feel effortless.",
-    a: "Priya Anand",
-    r: "Head of Product, Northline",
+    a: "Dr. Ananya Iyer",
+    r: "Director, Aura Dental Clinic",
   },
 ];
 
