@@ -325,6 +325,7 @@ const projects: Project[] = [
     tags: ["Website", "SEO", "Web App"],
     gradient: "from-[#151a10] via-[#2d3a10] to-[#050505]",
     year: "2025",
+    url: "https://auradentalclinicindia.netlify.app/",
   },
   {
     n: "04",
