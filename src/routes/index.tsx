@@ -321,7 +321,7 @@ const projects: Project[] = [
   },
   {
     n: "03",
-    name: "Northline Capital",
+    name: "Aura Dental Clinic",
     tags: ["Website", "SEO", "Web App"],
     gradient: "from-[#151a10] via-[#2d3a10] to-[#050505]",
     year: "2025",
