@@ -1167,7 +1167,9 @@ function FinalCTA() {
           transition={{ delay: 0.5, duration: 0.9 }}
         >
           <motion.a
-            href="mailto:growframe@gmail.com"
+            href="https://wa.me/919021039470"
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn-primary !py-5 !px-8 !text-base"
             whileHover={{ scale: 1.05, boxShadow: "0 20px 60px rgba(163,255,63,0.5)" }}
             whileTap={{ scale: 0.97 }}
