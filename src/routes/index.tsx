@@ -1255,8 +1255,8 @@ function Footer() {
           </div>
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Contact</div>
-            <a href="mailto:growframe@gmail.com" className="mt-3 block text-sm hover:text-accent transition-colors">
-              growframe@gmail.com
+            <a href="mailto:growframe2026@gmail.com" className="mt-3 block text-sm hover:text-accent transition-colors">
+              growframe2026@gmail.com
             </a>
             <div className="mt-1 text-sm text-muted-foreground">+91 90210 39470</div>
           </div>
