@@ -1211,6 +1211,8 @@ function Footer() {
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Studio</div>
             <div className="mt-3 text-sm">
+              Remote-based
+              <br />
               Kolhapur, India
             </div>
           </div>
