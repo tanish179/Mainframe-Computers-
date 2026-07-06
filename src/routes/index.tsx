@@ -786,7 +786,7 @@ function PixelPurpose() {
 const testimonials = [
   {
     q: "Working with GrowFrame completely transformed our online presence. We doubled inbound within a quarter.",
-    a: "Aarav Mehta",
+    a: "Ganesh Rathod",
     r: "CEO, Mainframe Computers",
   },
   {
