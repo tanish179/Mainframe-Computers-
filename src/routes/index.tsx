@@ -329,10 +329,11 @@ const projects: Project[] = [
   },
   {
     n: "04",
-    name: "Kettle & Coal",
-    tags: ["E-commerce", "Brand", "Photography"],
+    name: "Anjana Dry Fruits",
+    tags: ["E-commerce", "Admin Dashboard", "Inventory System"],
     gradient: "from-[#1c1208] via-[#3a1e0a] to-[#050505]",
     year: "2025",
+    url: "https://anjanadryfruitsdashboard.netlify.app/",
   },
 ];
 
