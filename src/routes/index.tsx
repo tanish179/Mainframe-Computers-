@@ -519,6 +519,7 @@ function Numbers() {
 const services = [
   "Website Design",
   "WhatsApp Automation Setup",
+  "Full Stack Website",
   "More Coming Soon...",
 ];
 
