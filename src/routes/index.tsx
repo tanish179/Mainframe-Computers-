@@ -322,7 +322,7 @@ const projects: Project[] = [
   {
     n: "03",
     name: "Aura Dental Clinic",
-    tags: ["Website", "SEO", "Web App"],
+    tags: ["Healthcare UI", "Appointment Engine", "Brand Strategy"],
     gradient: "from-[#151a10] via-[#2d3a10] to-[#050505]",
     year: "2025",
     url: "https://auradentalclinicindia.netlify.app/",
