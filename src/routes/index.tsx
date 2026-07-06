@@ -482,7 +482,7 @@ function ProjectRow({ p, index }: { p: Project; index: number }) {
 
 function Numbers() {
   const stats = [
-    { n: 25, s: "+", label: "Projects" },
+    { n: 4, s: "+", label: "Projects" },
     { n: 98, s: "%", label: "Client Satisfaction" },
     { n: 4, s: "x", label: "Average Growth" },
     { n: 100, s: "%", label: "Custom Design" },
@@ -518,13 +518,8 @@ function Numbers() {
 
 const services = [
   "Website Design",
-  "Brand Strategy",
-  "AI Automation",
-  "Web Applications",
-  "UI / UX",
-  "3D Development",
-  "SEO",
-  "Maintenance",
+  "WhatsApp Automation Setup",
+  "More Coming Soon...",
 ];
 
 function Services() {
@@ -1171,7 +1166,7 @@ function FinalCTA() {
           transition={{ delay: 0.5, duration: 0.9 }}
         >
           <motion.a
-            href="mailto:hello@growframe.co"
+            href="mailto:growframe@gmail.com"
             className="btn-primary !py-5 !px-8 !text-base"
             whileHover={{ scale: 1.05, boxShadow: "0 20px 60px rgba(163,255,63,0.5)" }}
             whileTap={{ scale: 0.97 }}
@@ -1213,9 +1208,7 @@ function Footer() {
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Studio</div>
             <div className="mt-3 text-sm">
-              Remote-first
-              <br />
-              Lisbon · New York · Berlin
+              Kolhapur, India
             </div>
           </div>
           <div>
@@ -1246,10 +1239,10 @@ function Footer() {
           </div>
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Contact</div>
-            <a href="mailto:hello@growframe.co" className="mt-3 block text-sm hover:text-accent transition-colors">
-              hello@growframe.co
+            <a href="mailto:growframe@gmail.com" className="mt-3 block text-sm hover:text-accent transition-colors">
+              growframe@gmail.com
             </a>
-            <div className="mt-1 text-sm text-muted-foreground">+1 (415) 555-0132</div>
+            <div className="mt-1 text-sm text-muted-foreground">+91 90210 39470</div>
           </div>
         </div>
         <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs uppercase tracking-widest text-muted-foreground md:flex-row md:items-center">
