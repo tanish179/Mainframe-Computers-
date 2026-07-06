@@ -1231,13 +1231,26 @@ function Footer() {
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Socials</div>
             <ul className="mt-3 space-y-2 text-sm">
-              {["GitHub", "LinkedIn", "Instagram", "X"].map((l) => (
-                <li key={l}>
-                  <a href="#" className="hover:text-accent inline-flex items-center gap-1 transition-colors">
-                    {l} <ArrowUpRight className="h-3 w-3" />
-                  </a>
-                </li>
-              ))}
+              <li>
+                <a
+                  href="https://github.com/tanish179"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-accent inline-flex items-center gap-1 transition-colors"
+                >
+                  GitHub <ArrowUpRight className="h-3 w-3" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/tanishrathod.18"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-accent inline-flex items-center gap-1 transition-colors"
+                >
+                  Instagram <ArrowUpRight className="h-3 w-3" />
+                </a>
+              </li>
             </ul>
           </div>
           <div>
