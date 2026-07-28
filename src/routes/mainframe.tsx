@@ -135,7 +135,7 @@ function Nav() {
 
           <div className="flex items-center gap-3">
             <motion.a
-              href="tel:+919021039470"
+              href="tel:+91982306470"
               className="btn-primary !py-2.5 !px-5 !text-sm hidden md:inline-flex"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -190,13 +190,13 @@ function Nav() {
               </motion.a>
             ))}
             <motion.a
-              href="tel:+919021039470"
+              href="tel:+91982306470"
               className="btn-primary mt-8 !py-4 !px-8 !text-base"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Phone className="h-4 w-4" /> +91 90210 39470
+              <Phone className="h-4 w-4" /> +91 98230 6470
             </motion.a>
           </motion.div>
         )}
@@ -1241,12 +1241,12 @@ function FinalCTA() {
             Chat on WhatsApp <ArrowRight className="h-4 w-4" />
           </motion.a>
           <motion.a
-            href="tel:+919021039470"
+            href="tel:+91982306470"
             className="btn-ghost !py-5 !px-8 !text-base"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            Call +91 90210 39470
+            Call +91 98230 6470
           </motion.a>
         </motion.div>
       </div>
@@ -1313,10 +1313,10 @@ function Footer() {
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Contact</div>
             <a
-              href="tel:+919021039470"
+              href="tel:+91982306470"
               className="mt-3 block text-sm hover:text-accent transition-colors"
             >
-              +91 90210 39470
+              +91 98230 6470
             </a>
             <a
               href="https://wa.me/919021039470"
@@ -1469,7 +1469,7 @@ function MobileStickyBar() {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 flex items-center gap-3 rounded-full border border-border bg-background/90 backdrop-blur-2xl p-2.5 shadow-2xl md:hidden">
       <a
-        href="tel:+919021039470"
+        href="tel:+91982306470"
         className="flex flex-1 items-center justify-center gap-2 rounded-full bg-accent py-3 text-xs font-semibold text-background"
       >
         <Phone className="h-3.5 w-3.5" /> Call Technician
