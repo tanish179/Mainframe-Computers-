@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { formatINR } from '../services/dashboardService';
 import { Transaction, PaymentMethod } from '../types';
-import { Search, Plus, Pencil, Trash2, X, Check, User, Wrench, Printer, Laptop, Disc, Shield, HardDrive } from 'lucide-react';
+import { CustomerInvoiceModal } from '../components/modals/CustomerInvoiceModal';
+import { Search, Plus, Pencil, Trash2, X, Check, User, Wrench, Printer, Laptop, Disc, Shield, HardDrive, FileText } from 'lucide-react';
 
 interface SalesViewProps {
   onOpenAddSale: () => void;
@@ -23,6 +24,10 @@ const SALE_CATEGORIES = [
 export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
   const { transactions, updateTransaction, deleteTransaction, customers } = useData();
   const [search, setSearch] = useState('');
+
+  // Invoice Modal State
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [selectedInvoiceCustomer, setSelectedInvoiceCustomer] = useState('');
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -55,6 +60,11 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
     paymentCounts[method] = (paymentCounts[method] || 0) + 1;
   });
   const topPaymentMethod = Object.entries(paymentCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  const handleOpenInvoiceModal = (customerName: string = '') => {
+    setSelectedInvoiceCustomer(customerName);
+    setInvoiceModalOpen(true);
+  };
 
   const startEdit = (sale: Transaction) => {
     setEditingId(sale.id);
@@ -183,17 +193,27 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
             Sales & Service Register
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Over-the-counter billing, printer servicing, toner refills, laptop repairs & regular customer sales
+            Over-the-counter billing, printer servicing, toner refills, laptop repairs & customer invoices
           </p>
         </div>
 
-        <button
-          onClick={onOpenAddSale}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#087443] hover:bg-[#065F37] text-white text-xs font-bold rounded-xl shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>+ Record Service / Sale</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleOpenInvoiceModal('Shree Computers')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+          >
+            <FileText className="w-4 h-4 stroke-[2]" />
+            <span>📄 Generate Customer Invoice</span>
+          </button>
+
+          <button
+            onClick={onOpenAddSale}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#087443] hover:bg-[#065F37] text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>+ Record Service / Sale</span>
+          </button>
+        </div>
       </div>
 
       {/* Mini KPI Bar */}
@@ -243,7 +263,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                 <th className="py-3.5 px-4">Work Done / Item Details</th>
                 <th className="py-3.5 px-4">Payment Method</th>
                 <th className="py-3.5 px-6 text-right">Price (INR)</th>
-                <th className="py-3.5 px-4 text-center w-[100px]">Actions</th>
+                <th className="py-3.5 px-4 text-center w-[120px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -264,6 +284,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                         />
                         <datalist id="edit-customer-list">
                           <option value="Walk-in Store Customer" />
+                          <option value="Shree Computers" />
                           {customers.map(c => (
                             <option key={c.id} value={c.name} />
                           ))}
@@ -354,16 +375,23 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                       <td className="py-3.5 px-4">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
+                            onClick={() => handleOpenInvoiceModal(s.customer_name || 'Walk-in')}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all"
+                            title="Generate Customer Statement / Invoice"
+                          >
+                            <FileText className="w-3.5 h-3.5 stroke-[2]" />
+                          </button>
+                          <button
                             onClick={() => startEdit(s)}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-[#087443] hover:bg-emerald-50 transition-all"
-                            title="Edit sale"
+                            title="Edit record"
                           >
                             <Pencil className="w-3.5 h-3.5 stroke-[2]" />
                           </button>
                           <button
                             onClick={() => setDeleteConfirmId(s.id)}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all"
-                            title="Delete sale"
+                            title="Delete record"
                           >
                             <Trash2 className="w-3.5 h-3.5 stroke-[2]" />
                           </button>
@@ -386,6 +414,13 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
           </table>
         </div>
       </div>
+
+      {/* Customer Invoice Generator Modal */}
+      <CustomerInvoiceModal
+        isOpen={invoiceModalOpen}
+        onClose={() => setInvoiceModalOpen(false)}
+        initialCustomerName={selectedInvoiceCustomer}
+      />
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
