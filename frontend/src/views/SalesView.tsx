@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { formatINR } from '../services/dashboardService';
-import { Transaction } from '../types';
-import { Search, Plus } from 'lucide-react';
+import { Transaction, PaymentMethod } from '../types';
+import { Search, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 
 interface SalesViewProps {
   onOpenAddSale: () => void;
 }
 
 export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
-  const { transactions } = useData();
+  const { transactions, updateTransaction, deleteTransaction } = useData();
   const [search, setSearch] = useState('');
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDesc, setEditDesc] = useState('');
+  const [editAmount, setEditAmount] = useState('');
+  const [editPayment, setEditPayment] = useState<PaymentMethod>('cash');
+  const [editSaving, setEditSaving] = useState(false);
+
+  // Delete state
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Filter sales (income transactions)
   const sales: Transaction[] = transactions.filter((t: Transaction) => t.type === 'income');
@@ -30,6 +41,50 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
     paymentCounts[method] = (paymentCounts[method] || 0) + 1;
   });
   const topPaymentMethod = Object.entries(paymentCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  const startEdit = (sale: Transaction) => {
+    setEditingId(sale.id);
+    setEditDesc(sale.description);
+    setEditAmount(String(sale.amount));
+    setEditPayment(sale.payment_method);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDesc('');
+    setEditAmount('');
+    setEditPayment('cash');
+  };
+
+  const saveEdit = async () => {
+    if (!editingId || !editDesc.trim() || !editAmount.trim()) return;
+    setEditSaving(true);
+    try {
+      await updateTransaction(editingId, {
+        description: editDesc.trim(),
+        amount: Number(editAmount),
+        payment_method: editPayment,
+      });
+      cancelEdit();
+    } catch (err) {
+      console.error('Edit failed:', err);
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    setDeleteLoading(true);
+    try {
+      await deleteTransaction(deleteConfirmId);
+      setDeleteConfirmId(null);
+    } catch (err) {
+      console.error('Delete failed:', err);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-[1520px] mx-auto pb-12">
@@ -100,29 +155,118 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                 <th className="py-3.5 px-4">Category</th>
                 <th className="py-3.5 px-4">Payment Method</th>
                 <th className="py-3.5 px-6 text-right">Amount</th>
+                <th className="py-3.5 px-4 text-center w-[100px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map((s: Transaction) => (
-                <tr key={s.id} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="py-3.5 px-6 font-medium text-slate-500 whitespace-nowrap">{s.date}</td>
-                  <td className="py-3.5 px-4 font-bold text-slate-900">{s.description}</td>
-                  <td className="py-3.5 px-4 font-medium text-slate-700">{s.customer_name || 'Walk-in Store Customer'}</td>
-                  <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
-                      {s.category}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 uppercase font-mono text-[11px] text-slate-600">{s.payment_method}</td>
-                  <td className="py-3.5 px-6 text-right font-black font-mono text-[#087443] text-[13px]">
-                    +{formatINR(s.amount)}
-                  </td>
+                <tr key={s.id} className={`hover:bg-slate-50/70 transition-colors ${editingId === s.id ? 'bg-emerald-50/40' : ''}`}>
+                  {editingId === s.id ? (
+                    /* ---- EDIT MODE ROW ---- */
+                    <>
+                      <td className="py-3 px-6 font-medium text-slate-500 whitespace-nowrap">{s.date}</td>
+                      <td className="py-3 px-4">
+                        <input
+                          type="text"
+                          value={editDesc}
+                          onChange={e => setEditDesc(e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                          autoFocus
+                        />
+                      </td>
+                      <td className="py-3 px-4 font-medium text-slate-500 text-[11px]">{s.customer_name || 'Walk-in'}</td>
+                      <td className="py-3 px-4">
+                        <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
+                          {s.category}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <select
+                          value={editPayment}
+                          onChange={e => setEditPayment(e.target.value as PaymentMethod)}
+                          className="px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-[11px] font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                        >
+                          <option value="cash">CASH</option>
+                          <option value="UPI">UPI</option>
+                          <option value="card">CARD</option>
+                          <option value="bank_transfer">BANK TRANSFER</option>
+                          <option value="other">OTHER</option>
+                        </select>
+                      </td>
+                      <td className="py-3 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <span className="text-[#087443] font-bold text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={editAmount}
+                            onChange={e => setEditAmount(e.target.value)}
+                            className="w-20 px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-right font-mono font-bold text-[#087443] focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                            min="0"
+                            step="1"
+                          />
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={saveEdit}
+                            disabled={editSaving}
+                            className="p-1.5 rounded-lg bg-[#087443] text-white hover:bg-[#065F37] transition-colors disabled:opacity-50"
+                            title="Save"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="p-1.5 rounded-lg bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors"
+                            title="Cancel"
+                          >
+                            <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </button>
+                        </div>
+                      </td>
+                    </>
+                  ) : (
+                    /* ---- DISPLAY MODE ROW ---- */
+                    <>
+                      <td className="py-3.5 px-6 font-medium text-slate-500 whitespace-nowrap">{s.date}</td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900">{s.description}</td>
+                      <td className="py-3.5 px-4 font-medium text-slate-700">{s.customer_name || 'Walk-in Store Customer'}</td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
+                          {s.category}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 uppercase font-mono text-[11px] text-slate-600">{s.payment_method}</td>
+                      <td className="py-3.5 px-6 text-right font-black font-mono text-[#087443] text-[13px]">
+                        +{formatINR(s.amount)}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => startEdit(s)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#087443] hover:bg-emerald-50 transition-all"
+                            title="Edit sale"
+                          >
+                            <Pencil className="w-3.5 h-3.5 stroke-[2]" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(s.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                            title="Delete sale"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 stroke-[2]" />
+                          </button>
+                        </div>
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
 
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
                     <div className="text-sm font-semibold text-slate-600 mb-1">No sales records found</div>
                     <div className="text-xs text-slate-400">Click "+ Add Customer Sale" to record a sale.</div>
                   </td>
@@ -132,6 +276,59 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 max-w-sm w-full mx-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5 text-red-600 stroke-[2]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Delete this sale?</h3>
+                <p className="text-xs text-slate-500 mt-0.5">This action cannot be undone. The sale record will be permanently removed.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-xl p-3 mb-5 border border-slate-100">
+              {(() => {
+                const sale = sales.find(s => s.id === deleteConfirmId);
+                return sale ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-slate-800">{sale.description}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">{sale.date} · {sale.payment_method?.toUpperCase()}</div>
+                    </div>
+                    <div className="text-sm font-black font-mono text-[#087443]">+{formatINR(sale.amount)}</div>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {deleteLoading ? (
+                  <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                )}
+                <span>Delete Sale</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

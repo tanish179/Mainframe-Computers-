@@ -59,6 +59,8 @@ interface DataContextType {
   addCustomer: (cust: Omit<Customer, 'id' | 'created_at' | 'total_spent' | 'pending_amount'>) => Promise<void>;
   addProduct: (prod: Omit<Product, 'id' | 'created_at' | 'status'>) => Promise<void>;
   recordPayment: (pendingId: string, amountPaid: number, paymentMethod: any) => Promise<void>;
+  updateTransaction: (id: string, updates: Partial<Pick<Transaction, 'description' | 'amount' | 'payment_method' | 'category'>>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
   toggleTaskStatus: (taskId: string) => void;
   resetToDemoData: () => void;
   isSupabaseLive: boolean;
@@ -386,6 +388,40 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateTransaction = async (id: string, updates: Partial<Pick<Transaction, 'description' | 'amount' | 'payment_method' | 'category'>>) => {
+    if (supabase) {
+      const dbUpdates: Record<string, any> = {};
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.amount !== undefined) dbUpdates.amount = Number(updates.amount);
+      if (updates.payment_method !== undefined) dbUpdates.payment_method = updates.payment_method;
+      if (updates.category !== undefined) dbUpdates.type = updates.category === 'Sales' ? 'income' : 'expense';
+
+      const { error } = await supabase.from('transactions').update(dbUpdates).eq('id', id);
+      if (error) {
+        console.error('Failed to update transaction:', error);
+        throw error;
+      }
+      await fetchSupabaseData();
+    } else {
+      setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    }
+  };
+
+  const deleteTransaction = async (id: string) => {
+    if (supabase) {
+      const { error } = await supabase.from('transactions').delete().eq('id', id);
+      if (error) {
+        console.error('Failed to delete transaction:', error);
+        throw error;
+      }
+      // Optimistic removal
+      setTransactions(prev => prev.filter(t => t.id !== id));
+      await fetchSupabaseData();
+    } else {
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    }
+  };
+
   const addSale = async (data: { customer_name?: string; items_description: string; amount: number; payment_method: any; category?: string; items?: any[] }) => {
     if (supabase) {
       const { error } = await supabase.rpc('create_sale_transaction', {
@@ -642,6 +678,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addCustomer,
       addProduct,
       recordPayment,
+      updateTransaction,
+      deleteTransaction,
       toggleTaskStatus,
       resetToDemoData,
       isSupabaseLive,
