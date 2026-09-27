@@ -1,0 +1,154 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Mainframe Computers Business Management API",
+    "description": "API for ChatGPT Custom GPT to query business summary, customers, sales, repair service jobs, inventory, expenses, and profit for Mainframe Computers.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/dashboard/summary": {
+      "get": {
+        "operationId": "get_business_summary",
+        "summary": "Get overall business financial summary and active job metrics",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["today", "this_week", "this_month", "last_month", "this_year", "custom"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Business summary metrics"
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "operationId": "get_customers",
+        "summary": "Get list of customers with search query filter",
+        "parameters": [
+          { "name": "query", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Customer list" } }
+      },
+      "post": {
+        "operationId": "create_customer",
+        "summary": "Create a new customer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "phone"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "email": { "type": "string" },
+                  "address": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Customer created" } }
+      }
+    },
+    "/services/jobs": {
+      "get": {
+        "operationId": "get_service_jobs",
+        "summary": "Get computer repair service jobs",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "query", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "List of repair jobs" } }
+      },
+      "post": {
+        "operationId": "create_service_job",
+        "summary": "Create a new repair service job",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["customer_id", "device_type", "device_brand", "device_model", "customer_problem"],
+                "properties": {
+                  "customer_id": { "type": "string" },
+                  "device_type": { "type": "string" },
+                  "device_brand": { "type": "string" },
+                  "device_model": { "type": "string" },
+                  "customer_problem": { "type": "string" },
+                  "estimated_cost": { "type": "number" },
+                  "advance_paid": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Service job created" } }
+      }
+    },
+    "/sales": {
+      "get": {
+        "operationId": "get_sales",
+        "summary": "Get sales records",
+        "responses": { "200": { "description": "List of sales" } }
+      },
+      "post": {
+        "operationId": "create_sale",
+        "summary": "Create a new product sale",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "customer_id": { "type": "string" },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["product_id", "quantity", "unit_price"],
+                      "properties": {
+                        "product_id": { "type": "string" },
+                        "quantity": { "type": "integer" },
+                        "unit_price": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Sale completed" } }
+      }
+    },
+    "/finance/profit": {
+      "get": {
+        "operationId": "get_profit",
+        "summary": "Get net profit calculation (Income - Expense)",
+        "parameters": [
+          { "name": "period", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Profit calculation" } }
+      }
+    }
+  }
+}

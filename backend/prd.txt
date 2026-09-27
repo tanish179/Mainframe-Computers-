@@ -1,0 +1,1509 @@
+Build a production-ready INTERNAL BUSINESS MANAGEMENT SYSTEM specifically for:
+
+MAINFRAME COMPUTERS
+Computer Sales, Services & Repair Business
+Kolhapur, Maharashtra, India
+
+IMPORTANT:
+This is NOT a generic SaaS.
+This is NOT a multi-business platform.
+This system is ONLY for Mainframe Computers.
+
+The system must be fully usable manually through a separate frontend/dashboard that will be developed independently.
+
+AI/ChatGPT/MCP integration is an OPTIONAL secondary interface.
+
+The business must NEVER depend on AI to operate.
+
+The architecture must allow:
+1. Human manually manages the business through the dashboard.
+2. ChatGPT/MCP can later read and perform authorized operations using the same backend.
+3. Both interfaces use the same business logic and database.
+
+==================================================
+1. PRODUCT PURPOSE
+==================================================
+
+Create a centralized digital operating system for Mainframe Computers.
+
+The system should help manage:
+
+- Customers
+- Computer/laptop sales
+- Computer repairs
+- Laptop repairs
+- Printer repairs
+- Printer cartridge refilling
+- PC builds
+- PC upgrades
+- CCTV work
+- Data recovery
+- Windows/software installation
+- Service jobs
+- Products
+- Spare parts
+- Income
+- Expenses
+- Payments
+- Pending payments
+- Suppliers/vendors
+- Invoices
+- Service history
+- Inventory
+- Employees
+- Business activity
+- Profit
+- Cash flow
+- Reports
+
+The system must work even if AI/MCP is completely disabled.
+
+==================================================
+2. BUSINESS MODEL
+==================================================
+
+Mainframe Computers operates primarily as a computer hardware and technology service business.
+
+Business activities include:
+
+SALES:
+- Laptops
+- Desktops
+- Computer components
+- Accessories
+- Printers
+- Other hardware
+
+SERVICES:
+- Laptop repair
+- Desktop repair
+- Printer repair
+- Cartridge refill
+- PC build
+- PC upgrade
+- CCTV installation
+- Data recovery
+- Windows installation
+- Formatting
+- Software installation
+- Hardware replacement
+- Troubleshooting
+
+The database architecture must support both:
+- Product sales
+- Service jobs
+
+==================================================
+3. CORE SYSTEM PRINCIPLE
+==================================================
+
+Supabase/PostgreSQL is the single source of truth.
+
+Manual dashboard:
+
+Dashboard
+   ↓
+Business Services
+   ↓
+Supabase
+
+AI:
+
+ChatGPT
+   ↓
+MCP
+   ↓
+Business Services
+   ↓
+Supabase
+
+Do NOT allow the MCP layer to bypass business services.
+
+Do NOT allow AI direct unrestricted SQL access.
+
+==================================================
+4. TECHNOLOGY
+==================================================
+
+Backend:
+
+- Supabase
+- PostgreSQL
+- Supabase Auth
+- Row Level Security
+- Supabase Storage
+- Supabase Realtime where useful
+- Supabase Edge Functions where appropriate
+
+Language:
+
+- TypeScript
+
+Validation:
+
+- Zod
+
+AI:
+
+- MCP
+- ChatGPT custom app
+
+The frontend will be developed separately.
+
+Do NOT build the frontend.
+
+==================================================
+5. AUTHENTICATION
+==================================================
+
+Use Supabase Auth.
+
+Users should be able to log in securely.
+
+Create:
+
+profiles
+
+Fields:
+- id
+- full_name
+- phone
+- avatar_url
+- created_at
+- updated_at
+
+Create:
+
+business_users
+
+Fields:
+- id
+- user_id
+- role
+- status
+- created_at
+
+Roles:
+
+OWNER
+ADMIN
+STAFF
+
+Initially optimize the system for a small business team.
+
+==================================================
+6. BUSINESS PROFILE
+==================================================
+
+Create:
+
+business_profile
+
+Fields:
+
+- id
+- business_name
+- business_description
+- address
+- phone
+- email
+- gst_number nullable
+- currency
+- timezone
+- created_at
+- updated_at
+
+Initial business:
+
+Mainframe Computers
+
+Location:
+
+Kolhapur, Maharashtra, India
+
+Currency:
+
+INR
+
+Timezone:
+
+Asia/Kolkata
+
+==================================================
+7. CUSTOMERS
+==================================================
+
+Create:
+
+customers
+
+Fields:
+
+- id
+- name
+- phone
+- alternate_phone
+- email
+- address
+- notes
+- status
+- created_at
+- updated_at
+
+Statuses:
+
+active
+inactive
+
+Customer information should connect to:
+
+- Sales
+- Service jobs
+- Repairs
+- Invoices
+- Payments
+- Pending payments
+- Service history
+
+A customer should have a complete history.
+
+Example:
+
+Customer:
+Rahul Patil
+
+History:
+
+Laptop repair
+₹1,500
+Completed
+
+Windows installation
+₹500
+Paid
+
+Laptop battery replacement
+₹3,500
+Pending
+
+==================================================
+8. PRODUCTS
+==================================================
+
+Create:
+
+products
+
+Fields:
+
+- id
+- name
+- category
+- sku
+- brand
+- model
+- serial_number nullable
+- purchase_price
+- selling_price
+- stock_quantity
+- minimum_stock_level
+- supplier_id nullable
+- status
+- created_at
+- updated_at
+
+Product categories:
+
+Laptop
+Desktop
+CPU
+GPU
+RAM
+SSD
+HDD
+Motherboard
+Power Supply
+Monitor
+Keyboard
+Mouse
+Printer
+Cartridge
+Cable
+CCTV
+Accessory
+Other
+
+==================================================
+9. INVENTORY
+==================================================
+
+Inventory must support:
+
+- Stock in
+- Stock out
+- Stock adjustment
+- Damaged items
+- Sold items
+- Used spare parts
+
+Create:
+
+inventory_transactions
+
+Fields:
+
+- id
+- product_id
+- type
+- quantity
+- reference_type
+- reference_id
+- notes
+- created_at
+
+Types:
+
+stock_in
+stock_out
+adjustment
+damaged
+returned
+used_in_service
+
+Stock quantity must be updated safely.
+
+==================================================
+10. SUPPLIERS
+==================================================
+
+Create:
+
+suppliers
+
+Fields:
+
+- id
+- name
+- company
+- phone
+- email
+- address
+- GST number nullable
+- notes
+- status
+- created_at
+- updated_at
+
+Suppliers should connect to:
+
+- Purchases
+- Products
+- Payables
+
+==================================================
+11. SALES
+==================================================
+
+Create:
+
+sales
+
+Fields:
+
+- id
+- customer_id nullable
+- invoice_id nullable
+- subtotal
+- discount
+- tax
+- total
+- payment_status
+- status
+- sale_date
+- notes
+- created_by
+- created_at
+- updated_at
+
+Statuses:
+
+draft
+confirmed
+completed
+cancelled
+
+Payment statuses:
+
+unpaid
+partially_paid
+paid
+refunded
+
+==================================================
+12. SALE ITEMS
+==================================================
+
+Create:
+
+sale_items
+
+Fields:
+
+- id
+- sale_id
+- product_id
+- quantity
+- unit_price
+- discount
+- total
+
+When a sale is completed:
+
+1. Validate stock.
+2. Reduce inventory.
+3. Create transaction.
+4. Update payment state.
+5. Create activity log.
+
+Use database transactions where necessary.
+
+==================================================
+13. SERVICE JOBS
+==================================================
+
+This is one of the most important modules.
+
+Mainframe Computers performs repairs and technical services.
+
+Create:
+
+service_jobs
+
+Fields:
+
+- id
+- customer_id
+- job_number
+- device_type
+- device_brand
+- device_model
+- serial_number nullable
+- customer_problem
+- technician_notes
+- diagnosis
+- estimated_cost
+- final_cost
+- advance_paid
+- remaining_amount
+- status
+- priority
+- received_date
+- expected_date nullable
+- completed_date nullable
+- delivered_date nullable
+- assigned_to nullable
+- created_at
+- updated_at
+
+Device types:
+
+Laptop
+Desktop
+Printer
+Monitor
+CCTV
+Other
+
+==================================================
+14. SERVICE TYPES
+==================================================
+
+Create:
+
+service_types
+
+Examples:
+
+Laptop Repair
+Desktop Repair
+Printer Repair
+Cartridge Refill
+Windows Installation
+Formatting
+Data Recovery
+PC Build
+PC Upgrade
+CCTV Installation
+Battery Replacement
+Screen Replacement
+Keyboard Replacement
+Motherboard Repair
+Other
+
+Each service type may have:
+
+- name
+- default_price nullable
+- estimated_duration nullable
+- description
+
+==================================================
+15. SERVICE JOB STATUS
+==================================================
+
+Use:
+
+received
+diagnosing
+waiting_for_customer
+waiting_for_part
+in_repair
+ready
+delivered
+cancelled
+
+Example lifecycle:
+
+Received
+ ↓
+Diagnosing
+ ↓
+Waiting for Part
+ ↓
+In Repair
+ ↓
+Ready
+ ↓
+Delivered
+
+The system must record status changes.
+
+==================================================
+16. SERVICE JOB PARTS
+==================================================
+
+A repair may consume inventory items.
+
+Create:
+
+service_job_parts
+
+Fields:
+
+- id
+- service_job_id
+- product_id
+- quantity
+- unit_cost
+- selling_price
+- created_at
+
+When a part is used:
+
+Inventory must decrease.
+
+Inventory transaction:
+
+used_in_service
+
+Reference:
+
+service_job_id
+
+==================================================
+17. SERVICE JOB PAYMENTS
+==================================================
+
+Support:
+
+- Advance payment
+- Partial payment
+- Final payment
+
+Example:
+
+Repair cost:
+₹5,000
+
+Advance:
+₹2,000
+
+Remaining:
+₹3,000
+
+Status:
+
+partially_paid
+
+After final payment:
+
+paid
+
+==================================================
+18. SERVICE WARRANTY
+==================================================
+
+Support optional warranty information.
+
+service_jobs:
+
+- warranty_days
+- warranty_start_date
+- warranty_end_date
+
+The system should be able to identify whether a service is currently under warranty.
+
+==================================================
+19. INVOICES
+==================================================
+
+Create:
+
+invoices
+
+Fields:
+
+- id
+- invoice_number
+- customer_id
+- sale_id nullable
+- service_job_id nullable
+- subtotal
+- discount
+- tax
+- total
+- issued_date
+- due_date
+- status
+- created_at
+- updated_at
+
+Statuses:
+
+draft
+issued
+partially_paid
+paid
+overdue
+cancelled
+
+An invoice may originate from:
+
+- Product sale
+- Service job
+
+==================================================
+20. PAYMENTS
+==================================================
+
+Create:
+
+payments
+
+Fields:
+
+- id
+- customer_id
+- invoice_id nullable
+- sale_id nullable
+- service_job_id nullable
+- amount
+- payment_method
+- payment_date
+- reference
+- notes
+- status
+- created_by
+- created_at
+
+Payment methods:
+
+cash
+UPI
+card
+bank_transfer
+other
+
+Statuses:
+
+pending
+completed
+failed
+refunded
+
+==================================================
+21. CUSTOMER RECEIVABLES
+==================================================
+
+Track money customers still owe Mainframe Computers.
+
+Create:
+
+receivables
+
+Fields:
+
+- id
+- customer_id
+- invoice_id
+- total_amount
+- paid_amount
+- remaining_amount
+- due_date
+- status
+- created_at
+- updated_at
+
+Statuses:
+
+pending
+partially_paid
+paid
+overdue
+cancelled
+
+The system must automatically update this when payments are recorded.
+
+==================================================
+22. BUSINESS EXPENSES
+==================================================
+
+Create:
+
+expenses
+
+Fields:
+
+- id
+- category
+- description
+- amount
+- vendor nullable
+- payment_method
+- expense_date
+- reference
+- status
+- notes
+- created_by
+- created_at
+- updated_at
+
+Categories:
+
+Rent
+Electricity
+Internet
+Salary
+Transport
+Marketing
+Software
+Hardware Purchase
+Inventory Purchase
+Tools
+Maintenance
+Other
+
+Statuses:
+
+paid
+pending
+cancelled
+
+==================================================
+23. BUSINESS INCOME
+==================================================
+
+All money received by Mainframe Computers should be traceable.
+
+Income can come from:
+
+- Product sales
+- Repair services
+- Printer services
+- PC builds
+- CCTV
+- Data recovery
+- Software installation
+- Other services
+
+Create a unified income/financial transaction layer.
+
+==================================================
+24. FINANCIAL TRANSACTIONS
+==================================================
+
+Create:
+
+transactions
+
+Fields:
+
+- id
+- type
+- amount
+- reference_type
+- reference_id
+- description
+- payment_method
+- transaction_date
+- status
+- created_at
+
+Types:
+
+income
+expense
+refund
+transfer
+adjustment
+
+This becomes the foundation for financial reporting.
+
+==================================================
+25. PROFIT
+==================================================
+
+Calculate:
+
+Profit = Income - Expenses
+
+Support:
+
+Today
+This Week
+This Month
+Last Month
+This Year
+Custom Range
+
+Where possible, calculate from transaction data rather than manually entered profit numbers.
+
+==================================================
+26. CASH FLOW
+==================================================
+
+Calculate:
+
+Money In
+Money Out
+Net Cash Flow
+
+Support date ranges.
+
+==================================================
+27. PAYABLES
+==================================================
+
+Track money Mainframe Computers owes suppliers/vendors.
+
+Create:
+
+payables
+
+Fields:
+
+- id
+- supplier_id nullable
+- description
+- amount
+- paid_amount
+- remaining_amount
+- due_date
+- status
+- created_at
+- updated_at
+
+Statuses:
+
+pending
+partially_paid
+paid
+overdue
+cancelled
+
+==================================================
+28. EMPLOYEES / STAFF
+==================================================
+
+Create:
+
+employees
+
+Fields:
+
+- id
+- user_id nullable
+- name
+- phone
+- email
+- role
+- status
+- joined_at
+- created_at
+- updated_at
+
+Employees can be assigned to service jobs.
+
+==================================================
+29. BUSINESS ACTIVITY
+==================================================
+
+Create:
+
+activity_logs
+
+Track:
+
+Customer created
+Customer updated
+Sale created
+Sale completed
+Service job created
+Service job status changed
+Payment received
+Expense created
+Product added
+Inventory changed
+Invoice created
+Invoice paid
+
+Fields:
+
+- id
+- user_id
+- action
+- entity_type
+- entity_id
+- metadata
+- created_at
+
+==================================================
+30. DASHBOARD DATA API
+==================================================
+
+The frontend will be developed separately.
+
+Therefore expose clean backend services for:
+
+get_business_summary()
+
+Return:
+
+- total_income
+- total_expenses
+- profit
+- cash_in
+- cash_out
+- receivables
+- payables
+- pending_payments
+- overdue_invoices
+- active_service_jobs
+- completed_service_jobs
+- total_sales
+- total_customers
+- low_stock_items
+
+Support:
+
+today
+this_week
+this_month
+last_month
+this_year
+custom
+
+==================================================
+31. REPORTING
+==================================================
+
+Create backend reporting services.
+
+Reports:
+
+1. Sales Report
+2. Service Report
+3. Income Report
+4. Expense Report
+5. Profit Report
+6. Cash Flow Report
+7. Receivables Report
+8. Payables Report
+9. Inventory Report
+10. Customer Report
+11. Service Job Report
+
+Every report must support filters.
+
+==================================================
+32. ANALYTICS
+==================================================
+
+Provide structured analytics.
+
+Financial:
+
+- Revenue
+- Expenses
+- Profit
+- Cash flow
+- Receivables
+- Payables
+
+Sales:
+
+- Number of sales
+- Sales value
+- Average sale value
+- Top products
+
+Services:
+
+- Number of jobs
+- Completed jobs
+- Pending jobs
+- Revenue by service
+- Average repair value
+- Jobs by status
+
+Inventory:
+
+- Current stock
+- Low stock
+- Stock movement
+- Most used parts
+
+Customers:
+
+- Total customers
+- New customers
+- Returning customers
+- Highest spending customers
+
+==================================================
+33. MCP / CHATGPT INTEGRATION
+==================================================
+
+Build a secure MCP layer as an OPTIONAL interface.
+
+The business must continue operating normally without it.
+
+READ TOOLS:
+
+get_business_summary
+get_sales
+get_sale
+get_customers
+get_customer
+get_service_jobs
+get_service_job
+get_payments
+get_income
+get_expenses
+get_transactions
+get_receivables
+get_payables
+get_inventory
+get_products
+get_low_stock
+get_invoices
+get_business_activity
+get_financial_report
+get_service_report
+get_sales_report
+
+WRITE TOOLS:
+
+create_customer
+update_customer
+create_service_job
+update_service_job_status
+create_sale
+create_expense
+record_payment
+create_invoice
+add_product
+update_inventory
+
+==================================================
+34. MCP RULES
+==================================================
+
+AI must NEVER have arbitrary database access.
+
+Never create:
+
+execute_sql()
+
+Every MCP operation must use the same business services as the manual dashboard.
+
+Architecture:
+
+Manual Dashboard
+       |
+       v
+Business Services
+       |
+       v
+Supabase
+
+ChatGPT
+       |
+       v
+MCP
+       |
+       v
+Business Services
+       |
+       v
+Supabase
+
+This ensures AI and humans operate on the same business rules.
+
+==================================================
+35. AI SAFETY
+==================================================
+
+AI must:
+
+- Never invent financial information.
+- Never guess customer balances.
+- Never invent stock quantities.
+- Never claim an action succeeded unless the backend confirms it.
+- Never access unauthorized data.
+- Never access another business.
+- Never bypass permissions.
+- Never expose secrets.
+- Never execute arbitrary SQL.
+
+For financial answers, always provide the relevant date range.
+
+==================================================
+36. MANUAL OPERATION IS PRIMARY
+==================================================
+
+This is extremely important.
+
+The system must be fully usable without AI.
+
+Every important operation must have a normal backend service/API:
+
+create_customer()
+update_customer()
+create_service_job()
+update_service_job()
+create_sale()
+create_invoice()
+record_payment()
+create_expense()
+add_product()
+update_inventory()
+
+The future frontend will call these directly.
+
+MCP will call the SAME services.
+
+Never create separate AI-specific business logic.
+
+==================================================
+37. DATABASE SECURITY
+==================================================
+
+Use Supabase Row Level Security.
+
+Although this is initially for one business, design the data model so sensitive business information is protected by authenticated user access.
+
+Never expose:
+
+SUPABASE_SERVICE_ROLE_KEY
+database credentials
+private API keys
+MCP secrets
+
+to the frontend.
+
+==================================================
+38. DATA INTEGRITY
+==================================================
+
+Financial operations must be consistent.
+
+Example:
+
+Repair:
+₹5,000
+
+Advance:
+₹2,000
+
+Remaining:
+₹3,000
+
+After final payment:
+₹3,000
+
+Remaining:
+₹0
+
+Status:
+paid
+
+Similarly, if a product is sold:
+
+Stock:
+10
+
+Sold:
+2
+
+New stock:
+8
+
+All related financial and inventory operations should be handled safely.
+
+==================================================
+39. DATABASE DESIGN
+==================================================
+
+Use PostgreSQL relationships and foreign keys.
+
+Core tables:
+
+profiles
+business_profile
+business_users
+
+customers
+suppliers
+employees
+
+products
+inventory_transactions
+
+service_types
+service_jobs
+service_job_parts
+
+sales
+sale_items
+
+invoices
+payments
+
+income
+expenses
+transactions
+
+receivables
+payables
+
+activity_logs
+ai_audit_logs
+
+==================================================
+40. MIGRATIONS
+==================================================
+
+Use proper Supabase migration files.
+
+All schema changes must be reproducible.
+
+Include:
+
+- Tables
+- Foreign keys
+- Constraints
+- Indexes
+- RLS
+- Functions
+- Triggers where required
+
+==================================================
+41. TESTING
+==================================================
+
+Write automated tests for:
+
+Customers
+Sales
+Services
+Payments
+Invoices
+Expenses
+Income
+Inventory
+Receivables
+Payables
+Profit
+Cash flow
+Permissions
+MCP tools
+
+Important scenarios:
+
+1. Customer creates repair.
+2. Repair receives advance payment.
+3. Part is consumed.
+4. Repair becomes ready.
+5. Customer pays remaining amount.
+6. Invoice becomes paid.
+7. Financial transaction is created.
+8. Activity is logged.
+
+Also test:
+
+- Partial payments
+- Refunds
+- Cancelled jobs
+- Cancelled sales
+- Stock shortages
+- Duplicate payments
+- Overdue invoices
+- Incorrect permissions
+
+==================================================
+42. PROJECT STRUCTURE
+==================================================
+
+Use a clean architecture similar to:
+
+mainframe-business-system/
+|
++-- supabase/
+|   +-- migrations/
+|   +-- functions/
+|
++-- src/
+|   +-- auth/
+|   +-- customers/
+|   +-- products/
+|   +-- inventory/
+|   +-- sales/
+|   +-- services/
+|   +-- invoices/
+|   +-- payments/
+|   +-- income/
+|   +-- expenses/
+|   +-- finance/
+|   +-- receivables/
+|   +-- payables/
+|   +-- employees/
+|   +-- analytics/
+|   +-- reports/
+|   +-- activity/
+|   +-- ai/
+|   +-- mcp/
+|
++-- tests/
+|
++-- docs/
+|
++-- .env.example
+|
++-- README.md
+
+Adapt the exact structure if a better architecture is appropriate.
+
+==================================================
+43. PRODUCTION REQUIREMENTS
+==================================================
+
+The system must be:
+
+- Secure
+- Modular
+- Maintainable
+- Type-safe
+- Transaction-safe
+- Multi-user capable
+- Extensible
+- Production-ready
+
+Prioritize:
+
+1. Data integrity
+2. Security
+3. Correctness
+4. Maintainability
+5. Performance
+6. Features
+
+==================================================
+44. V1 DEFINITION OF DONE
+==================================================
+
+V1 is complete when:
+
+[ ] Supabase configured
+[ ] Authentication working
+[ ] Business profile working
+[ ] Customers working
+[ ] Suppliers working
+[ ] Products working
+[ ] Inventory working
+[ ] Service jobs working
+[ ] Service parts working
+[ ] Sales working
+[ ] Invoices working
+[ ] Payments working
+[ ] Income tracking working
+[ ] Expense tracking working
+[ ] Transactions working
+[ ] Receivables working
+[ ] Payables working
+[ ] Profit calculations working
+[ ] Cash flow calculations working
+[ ] Employees working
+[ ] Activity logs working
+[ ] Reports working
+[ ] Analytics working
+[ ] Manual backend operations working
+[ ] MCP read tools working
+[ ] MCP write tools working
+[ ] AI audit logs working
+[ ] Security tests passing
+[ ] Financial integrity tests passing
+[ ] Inventory integrity tests passing
+[ ] Documentation complete
+[ ] Deployment instructions complete
+
+==================================================
+45. FINAL INSTRUCTION
+==================================================
+
+Build the actual backend system.
+
+Do not only generate a PRD.
+
+Do not build frontend/UI.
+
+Start by creating the database schema and migration architecture.
+
+Then implement:
+
+1. Authentication
+2. Business profile
+3. Customers
+4. Products
+5. Inventory
+6. Service jobs
+7. Sales
+8. Invoices
+9. Payments
+10. Income
+11. Expenses
+12. Transactions
+13. Receivables
+14. Payables
+15. Finance calculations
+16. Analytics
+17. Reports
+18. Activity logging
+19. Manual business services
+20. MCP integration
+21. Tests
+22. Documentation
+
+After each major module, verify that it integrates correctly with existing modules before continuing.
+
+The final result must be a reliable digital operating system for Mainframe Computers that can be manually operated through a future dashboard and optionally controlled/read through ChatGPT.

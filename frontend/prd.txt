@@ -1,0 +1,1096 @@
+I want to build a premium business management dashboard for my real business:
+
+BUSINESS:
+Mainframe Computers
+Location: Kolhapur, Maharashtra, India
+
+BUSINESS TYPE:
+Computer sales, services and repairs.
+
+Use the provided dashboard screenshot as the PRIMARY VISUAL DESIGN REFERENCE.
+
+IMPORTANT:
+Do NOT copy the business content from the screenshot.
+
+Instead, recreate the SAME visual language, layout quality, spacing, card system, typography hierarchy, sidebar structure and premium SaaS feeling, but transform the product into a BUSINESS MANAGEMENT DASHBOARD specifically for Mainframe Computers.
+
+The final application should look like a premium custom-built internal business operating system.
+
+==================================================
+CORE PURPOSE
+==================================================
+
+The dashboard should allow the owner/staff to manually manage:
+
+- Sales
+- Income
+- Expenses
+- Profit
+- Pending payments
+- Customer payments
+- Computer/laptop sales
+- Repair jobs
+- Printer repairs
+- CCTV jobs
+- PC builds
+- Refurbished laptop sales
+- Cartridge refills
+- Data recovery jobs
+- Inventory
+- Customers
+- Suppliers
+- Staff/work assignments
+- Appointments
+- Business records
+
+The system must be usable manually.
+
+Do NOT depend on AI for normal business operations.
+
+==================================================
+TECH STACK
+==================================================
+
+Frontend:
+
+- React 19
+- Vite
+- TypeScript
+- Tailwind CSS
+- Lucide React
+- Recharts
+- Framer Motion
+
+Backend/database:
+
+- Supabase
+- PostgreSQL
+- Supabase Auth
+- Supabase Storage where required
+- Row Level Security
+
+Use a clean modular architecture.
+
+Do not use unnecessary UI frameworks.
+
+==================================================
+VISUAL DESIGN
+==================================================
+
+Use the provided screenshot as the visual reference.
+
+Overall aesthetic:
+
+- Premium SaaS dashboard
+- Minimal
+- Modern
+- Clean
+- Professional
+- White cards
+- Very light gray page background
+- Deep emerald/forest green primary color
+- Dark charcoal text
+- Subtle gray borders
+- Soft shadows
+- Rounded corners
+- Generous spacing
+- Compact but information-rich
+- Desktop-first dashboard
+- Fully responsive
+
+Primary green should be approximately:
+
+#087443
+#087A4B
+
+Background approximately:
+
+#F5F6F5
+
+Avoid:
+
+- excessive gradients
+- excessive glassmorphism
+- neon colors
+- generic admin-template appearance
+- huge typography
+- unnecessary animations
+- fake 3D effects
+
+The dashboard should feel like a professionally designed SaaS product.
+
+==================================================
+APPLICATION SHELL
+==================================================
+
+Create a fixed left sidebar similar to the reference screenshot.
+
+Brand:
+
+MAINFRAME
+COMPUTERS
+
+Use a simple custom computer/tech logo icon.
+
+Navigation:
+
+MAIN
+
+Dashboard
+Transactions
+Sales
+Expenses
+Repairs
+Customers
+Inventory
+
+BUSINESS
+
+Reports
+Appointments
+Suppliers
+Staff
+
+GENERAL
+
+Settings
+Help
+Logout
+
+Dashboard should be highlighted using the green active indicator from the reference design.
+
+Bottom of sidebar:
+
+Create a small promotional/info card:
+
+"Mainframe Computers"
+
+"Revive Your Tech,
+Restore Your Life."
+
+Keep it visually similar to the mobile-app promotional card from the reference.
+
+==================================================
+TOP HEADER
+==================================================
+
+Create the same style header as the reference.
+
+Left:
+
+Search bar
+
+Placeholder:
+
+"Search transactions, customers, repairs..."
+
+Include keyboard shortcut indicator.
+
+Right:
+
+Notification icon
+Messages icon
+User avatar
+User name
+Business role
+
+Example:
+
+Mainframe Admin
+Administrator
+
+==================================================
+DASHBOARD HEADER
+==================================================
+
+Title:
+
+Business Dashboard
+
+Subtitle:
+
+"Monitor your business, finances and daily operations."
+
+Right:
+
++ Add Transaction
+Quick Actions
+
+Primary button:
+
++ Add Transaction
+
+Secondary button:
+
+Quick Actions
+
+==================================================
+TOP FINANCIAL CARDS
+==================================================
+
+Create four large cards.
+
+CARD 1:
+
+Total Income
+
+₹124,500
+
+Small indicator:
+
++12.5% from last month
+
+CARD 2:
+
+Total Expenses
+
+₹48,200
+
+Small indicator:
+
++5.2% from last month
+
+CARD 3:
+
+Net Profit
+
+₹76,300
+
+Small indicator:
+
++18.4% from last month
+
+CARD 4:
+
+Pending Payments
+
+₹18,500
+
+Small indicator:
+
+8 customers pending
+
+IMPORTANT:
+
+These numbers are DEMO DATA ONLY.
+
+Structure the application so these values come dynamically from Supabase.
+
+Do not hardcode them in the final production architecture.
+
+==================================================
+MAIN FINANCIAL ANALYTICS
+==================================================
+
+Create a large chart section inspired by the "Project Analytics" card in the screenshot.
+
+Title:
+
+Income & Expenses
+
+Subtitle:
+
+"Monthly financial overview"
+
+Create a professional chart.
+
+X-axis:
+
+Apr
+May
+Jun
+Jul
+Aug
+Sep
+
+Two series:
+
+Income
+Expenses
+
+Use Recharts.
+
+The chart must dynamically load transaction data from Supabase.
+
+Add:
+
+- hover tooltip
+- month filtering
+- date range filtering
+- responsive behavior
+
+==================================================
+SECONDARY FINANCIAL SECTION
+==================================================
+
+Create a card:
+
+Cash Flow
+
+Show:
+
+Money In
+Money Out
+Net Cash Flow
+
+Use a clean visual representation.
+
+Also add a small selector:
+
+This Month
+Last Month
+Last 3 Months
+This Year
+
+==================================================
+RECENT TRANSACTIONS
+==================================================
+
+Create a large table/card titled:
+
+Recent Transactions
+
+Columns:
+
+Date
+Description
+Category
+Type
+Payment Method
+Amount
+Status
+
+Example:
+
+25 Sep
+Laptop Repair
+Repair
+Income
+UPI
+₹1,500
+Paid
+
+24 Sep
+Printer Cartridge
+Sales
+Income
+Cash
+₹850
+Paid
+
+24 Sep
+Electricity Bill
+Utilities
+Expense
+UPI
+₹3,200
+Paid
+
+23 Sep
+Laptop Purchase
+Inventory
+Expense
+Bank
+₹42,000
+Paid
+
+Use status badges:
+
+Paid
+Pending
+Partial
+
+Income should have a subtle positive visual indicator.
+
+Expenses should have a subtle negative visual indicator.
+
+==================================================
+ACTIVE REPAIRS
+==================================================
+
+Create a card titled:
+
+Active Repairs
+
+Each repair should display:
+
+Customer name
+Device
+Problem
+Repair status
+Expected delivery
+Amount
+
+Example:
+
+Rahul Patil
+Dell Inspiron
+Screen replacement
+In Progress
+Today
+₹4,500
+
+Statuses:
+
+Received
+Diagnosing
+Waiting for Parts
+In Repair
+Ready
+Delivered
+
+Clicking a repair should open its details.
+
+==================================================
+PENDING PAYMENTS
+==================================================
+
+Create a card:
+
+Pending Payments
+
+Display:
+
+Customer
+Invoice
+Amount
+Due Date
+Status
+
+Example:
+
+Amit Computers
+INV-1024
+₹8,500
+28 Sep
+Pending
+
+Add:
+
+View All
+
+and
+
+Record Payment
+
+buttons.
+
+==================================================
+QUICK ACTIONS
+==================================================
+
+Create a compact Quick Actions card.
+
+Actions:
+
++ Add Sale
++ Add Expense
++ New Repair
++ Add Customer
++ Add Product
++ Record Payment
+
+These should open modal forms.
+
+==================================================
+INVENTORY SECTION
+==================================================
+
+Create a card:
+
+Inventory Alerts
+
+Display products with:
+
+Product
+Current Stock
+Minimum Stock
+Status
+
+Examples:
+
+HP 680 Black Cartridge
+3
+5
+Low Stock
+
+8GB DDR4 RAM
+2
+5
+Low Stock
+
+Dell Keyboard
+12
+5
+In Stock
+
+Statuses:
+
+In Stock
+Low Stock
+Out of Stock
+
+==================================================
+TODAY'S WORK
+==================================================
+
+Create a card:
+
+Today's Work
+
+Display:
+
+Repair jobs
+Appointments
+Deliveries
+Customer follow-ups
+
+Example:
+
+10:30 AM
+Dell Laptop Repair
+Rahul Patil
+
+12:00 PM
+CCTV Service
+Shree Computers
+
+4:00 PM
+Laptop Delivery
+Amit
+
+==================================================
+BUSINESS SUMMARY
+==================================================
+
+Create another visualization/card:
+
+Business Overview
+
+Display:
+
+Sales
+Repairs
+CCTV
+PC Builds
+Accessories
+Other Services
+
+Show their contribution to total business revenue.
+
+==================================================
+TRANSACTION CATEGORIES
+==================================================
+
+Create categories for transactions.
+
+INCOME:
+
+Laptop Sale
+Desktop Sale
+Printer Sale
+Accessories
+Repair Service
+Printer Repair
+Cartridge Refill
+CCTV Installation
+PC Build
+Data Recovery
+Formatting / Windows Installation
+Other Service
+
+EXPENSE:
+
+Inventory Purchase
+Supplier Payment
+Rent
+Electricity
+Internet
+Transport
+Salary
+Marketing
+Software
+Maintenance
+Other
+
+==================================================
+TRANSACTION SYSTEM
+==================================================
+
+Every financial transaction should have:
+
+id
+date
+type
+category
+description
+amount
+payment_method
+customer_id
+supplier_id
+invoice_id
+notes
+created_by
+created_at
+
+Type:
+
+income
+expense
+
+Payment method:
+
+cash
+upi
+card
+bank_transfer
+other
+
+Status:
+
+paid
+pending
+partial
+
+==================================================
+REPAIR MANAGEMENT
+==================================================
+
+Repair record:
+
+id
+customer_id
+device_type
+brand
+model
+serial_number
+problem_description
+diagnosis
+repair_status
+estimated_cost
+final_cost
+advance_paid
+remaining_amount
+received_date
+expected_date
+delivered_date
+assigned_staff
+notes
+created_at
+
+==================================================
+CUSTOMER MANAGEMENT
+==================================================
+
+Customer fields:
+
+id
+name
+phone
+email
+address
+total_spent
+pending_amount
+created_at
+
+Customer page should show:
+
+Customer profile
+Transactions
+Repairs
+Invoices
+Pending payments
+Payment history
+
+==================================================
+INVENTORY DATABASE
+==================================================
+
+Product:
+
+id
+name
+sku
+category
+brand
+purchase_price
+selling_price
+stock_quantity
+minimum_stock
+supplier_id
+created_at
+
+Automatically calculate:
+
+Stock value
+Potential sales value
+Low-stock status
+
+==================================================
+SUPPLIERS
+==================================================
+
+Supplier:
+
+name
+phone
+email
+address
+products supplied
+total purchases
+pending payable amount
+
+==================================================
+REPORTS
+==================================================
+
+Create a Reports page.
+
+Include:
+
+Revenue report
+Expense report
+Profit report
+Sales report
+Repair revenue
+Category revenue
+Inventory report
+Pending payments
+Supplier payments
+
+Filters:
+
+Today
+This Week
+This Month
+Last Month
+This Year
+Custom Range
+
+Allow CSV export.
+
+==================================================
+SUPABASE DATABASE
+==================================================
+
+Create proper PostgreSQL tables.
+
+Suggested tables:
+
+profiles
+customers
+suppliers
+products
+inventory_transactions
+transactions
+repairs
+repair_parts
+invoices
+invoice_items
+payments
+appointments
+staff
+expenses
+sales
+
+Avoid unnecessary duplication.
+
+Use foreign keys properly.
+
+Use indexes for:
+
+dates
+customer_id
+supplier_id
+status
+transaction_type
+
+==================================================
+SECURITY
+==================================================
+
+Use Supabase Auth.
+
+Roles:
+
+admin
+staff
+
+Admin:
+
+Full access.
+
+Staff:
+
+Can manage:
+
+Customers
+Repairs
+Sales
+Transactions
+
+But sensitive financial/report settings can be restricted.
+
+Implement Row Level Security.
+
+Never expose Supabase service-role keys in frontend.
+
+Use environment variables.
+
+==================================================
+REAL-TIME DATA
+==================================================
+
+Dashboard cards and lists must be based on Supabase data.
+
+Examples:
+
+Total Income:
+
+SUM(transactions.amount)
+WHERE type = income
+
+Total Expenses:
+
+SUM(transactions.amount)
+WHERE type = expense
+
+Net Profit:
+
+income - expenses
+
+Pending Payments:
+
+SUM(payment remaining amounts)
+
+Active Repairs:
+
+COUNT(repairs WHERE status NOT IN delivered)
+
+Low Stock:
+
+COUNT(products WHERE stock_quantity <= minimum_stock)
+
+Do not calculate these from hardcoded demo values in production.
+
+==================================================
+DASHBOARD LAYOUT
+==================================================
+
+Preserve the reference screenshot's visual hierarchy:
+
+Sidebar
+↓
+Top search/header
+↓
+Dashboard heading
+↓
+4 financial cards
+↓
+Large financial analytics section
+↓
+Recent transactions + pending payments
+↓
+Active repairs + inventory alerts
+↓
+Additional business overview
+
+Use CSS Grid to reproduce the asymmetric card layout shown in the reference.
+
+Do NOT simply create a generic 4-column admin dashboard.
+
+The composition should feel similar to the reference screenshot.
+
+==================================================
+RESPONSIVE DESIGN
+==================================================
+
+Desktop:
+
+Sidebar visible.
+
+Tablet:
+
+Sidebar collapses.
+
+Mobile:
+
+Bottom navigation or hamburger menu.
+
+Cards become single-column.
+
+Tables become responsive cards.
+
+Charts resize correctly.
+
+Never allow horizontal page overflow.
+
+==================================================
+INTERACTIONS
+==================================================
+
+Add subtle Framer Motion animations:
+
+- card hover
+- modal opening
+- page transitions
+- dropdowns
+- button feedback
+- sidebar transitions
+
+Keep animations subtle and professional.
+
+Do not animate everything.
+
+==================================================
+COMPONENT ARCHITECTURE
+==================================================
+
+Use reusable components.
+
+Example:
+
+components/
+  layout/
+    Sidebar
+    Header
+    PageContainer
+
+  dashboard/
+    FinancialCard
+    IncomeExpenseChart
+    CashFlowCard
+    RecentTransactions
+    PendingPayments
+    ActiveRepairs
+    InventoryAlerts
+    QuickActions
+    BusinessOverview
+
+  transactions/
+    TransactionTable
+    TransactionForm
+    TransactionFilters
+
+  repairs/
+    RepairTable
+    RepairForm
+    RepairDetails
+
+  customers/
+    CustomerTable
+    CustomerForm
+    CustomerDetails
+
+  inventory/
+    InventoryTable
+    ProductForm
+    InventoryAlerts
+
+  common/
+    Modal
+    Button
+    Badge
+    DateFilter
+    EmptyState
+    LoadingState
+
+==================================================
+DATA FLOW
+==================================================
+
+Frontend:
+
+React
+
+↓
+
+Supabase client
+
+↓
+
+Supabase PostgreSQL
+
+Do not put business calculations randomly inside UI components.
+
+Create reusable service/query functions.
+
+Example:
+
+getDashboardStats()
+
+getMonthlyIncomeExpenses()
+
+getRecentTransactions()
+
+getPendingPayments()
+
+getActiveRepairs()
+
+getInventoryAlerts()
+
+==================================================
+IMPORTANT UX REQUIREMENTS
+==================================================
+
+The dashboard should make it immediately obvious:
+
+1. How much money came in.
+2. How much money went out.
+3. Current profit.
+4. How much money is pending.
+5. What repairs are active.
+6. What payments need follow-up.
+7. What inventory is running low.
+8. What work is happening today.
+
+The user should be able to add a transaction in under 10 seconds.
+
+==================================================
+DEMO DATA
+==================================================
+
+Initially seed Supabase with realistic demo data for:
+
+- 20 customers
+- 10 suppliers
+- 30 products
+- 50 transactions
+- 15 repair jobs
+- 10 invoices
+- 20 payments
+- 10 appointments
+
+Clearly separate seed/demo data from production data.
+
+==================================================
+FINAL QUALITY
+==================================================
+
+The final result should look like:
+
+"Mainframe Computers' private business operating system"
+
+NOT:
+
+"generic admin dashboard"
+
+Use the provided screenshot continuously as the visual reference.
+
+Match:
+
+- spacing
+- proportions
+- card sizes
+- typography hierarchy
+- rounded corners
+- sidebar proportions
+- green accent
+- white card surfaces
+- chart placement
+- visual density
+- overall composition
+
+Build the dashboard first, then implement the supporting pages and Supabase integration.
+
+Do not create unnecessary features outside the requirements above.
