@@ -59,7 +59,7 @@ interface DataContextType {
   addCustomer: (cust: Omit<Customer, 'id' | 'created_at' | 'total_spent' | 'pending_amount'>) => Promise<void>;
   addProduct: (prod: Omit<Product, 'id' | 'created_at' | 'status'>) => Promise<void>;
   recordPayment: (pendingId: string, amountPaid: number, paymentMethod: any) => Promise<void>;
-  updateTransaction: (id: string, updates: Partial<Pick<Transaction, 'description' | 'amount' | 'payment_method' | 'category'>>) => Promise<void>;
+  updateTransaction: (id: string, updates: Partial<Pick<Transaction, 'description' | 'amount' | 'payment_method' | 'category' | 'customer_name'>>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   toggleTaskStatus: (taskId: string) => void;
   resetToDemoData: () => void;
@@ -174,11 +174,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: t.id,
           date: t.transaction_date ? t.transaction_date.split('T')[0] : new Date().toISOString().split('T')[0],
           description: t.description,
-          category: t.type === 'income' ? 'Sales' : 'Maintenance',
+          category: t.category || (t.type === 'income' ? 'Sales' : 'Maintenance'),
           type: t.type === 'income' ? 'income' : 'expense',
           payment_method: t.payment_method || 'cash',
           amount: Number(t.amount || 0),
           status: 'Paid',
+          customer_name: t.customer_name || '',
           created_at: t.created_at,
         }));
         setTransactions(mapped);
@@ -388,19 +389,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateTransaction = async (id: string, updates: Partial<Pick<Transaction, 'description' | 'amount' | 'payment_method' | 'category'>>) => {
+  const updateTransaction = async (id: string, updates: Partial<Pick<Transaction, 'description' | 'amount' | 'payment_method' | 'category' | 'customer_name'>>) => {
     if (supabase) {
       const dbUpdates: Record<string, any> = {};
       if (updates.description !== undefined) dbUpdates.description = updates.description;
       if (updates.amount !== undefined) dbUpdates.amount = Number(updates.amount);
       if (updates.payment_method !== undefined) dbUpdates.payment_method = updates.payment_method;
-      if (updates.category !== undefined) dbUpdates.type = updates.category === 'Sales' ? 'income' : 'expense';
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.customer_name !== undefined) dbUpdates.customer_name = updates.customer_name || null;
+
+      const { data: tx } = await supabase.from('transactions').select('reference_type, reference_id').eq('id', id).maybeSingle();
 
       const { error } = await supabase.from('transactions').update(dbUpdates).eq('id', id);
       if (error) {
         console.error('Failed to update transaction:', error);
         throw error;
       }
+
+      if (tx?.reference_type === 'sale' && tx?.reference_id) {
+        const saleUpdates: Record<string, any> = {};
+        if (updates.description !== undefined) saleUpdates.description = updates.description;
+        if (updates.amount !== undefined) saleUpdates.total = Number(updates.amount);
+        if (Object.keys(saleUpdates).length > 0) {
+          await supabase.from('sales').update(saleUpdates).eq('id', tx.reference_id);
+        }
+      } else if (tx?.reference_type === 'expense' && tx?.reference_id) {
+        const expUpdates: Record<string, any> = {};
+        if (updates.description !== undefined) expUpdates.description = updates.description;
+        if (updates.amount !== undefined) expUpdates.amount = Number(updates.amount);
+        if (updates.category !== undefined) expUpdates.category = updates.category;
+        if (updates.payment_method !== undefined) expUpdates.payment_method = updates.payment_method;
+        if (Object.keys(expUpdates).length > 0) {
+          await supabase.from('expenses').update(expUpdates).eq('id', tx.reference_id);
+        }
+      }
+
       await fetchSupabaseData();
     } else {
       setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
@@ -409,12 +432,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteTransaction = async (id: string) => {
     if (supabase) {
+      const { data: tx } = await supabase.from('transactions').select('reference_type, reference_id').eq('id', id).maybeSingle();
+      if (tx?.reference_type === 'sale' && tx?.reference_id) {
+        await supabase.from('sale_items').delete().eq('sale_id', tx.reference_id);
+        await supabase.from('payments').delete().eq('sale_id', tx.reference_id);
+        await supabase.from('sales').delete().eq('id', tx.reference_id);
+      } else if (tx?.reference_type === 'expense' && tx?.reference_id) {
+        await supabase.from('expenses').delete().eq('id', tx.reference_id);
+      }
+
       const { error } = await supabase.from('transactions').delete().eq('id', id);
       if (error) {
         console.error('Failed to delete transaction:', error);
         throw error;
       }
-      // Optimistic removal
       setTransactions(prev => prev.filter(t => t.id !== id));
       await fetchSupabaseData();
     } else {

@@ -8,6 +8,18 @@ interface SalesViewProps {
   onOpenAddSale: () => void;
 }
 
+const SALE_CATEGORIES = [
+  'Sales',
+  'Hardware Sales',
+  'Software Sales',
+  'Service Charges',
+  'Accessories',
+  'CCTV Installation',
+  'Repair Charges',
+  'AMC Renewal',
+  'Other',
+];
+
 export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
   const { transactions, updateTransaction, deleteTransaction } = useData();
   const [search, setSearch] = useState('');
@@ -17,6 +29,8 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
   const [editDesc, setEditDesc] = useState('');
   const [editAmount, setEditAmount] = useState('');
   const [editPayment, setEditPayment] = useState<PaymentMethod>('cash');
+  const [editCustomer, setEditCustomer] = useState('');
+  const [editCategory, setEditCategory] = useState('Sales');
   const [editSaving, setEditSaving] = useState(false);
 
   // Delete state
@@ -47,6 +61,8 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
     setEditDesc(sale.description);
     setEditAmount(String(sale.amount));
     setEditPayment(sale.payment_method);
+    setEditCustomer(sale.customer_name || '');
+    setEditCategory(sale.category || 'Sales');
   };
 
   const cancelEdit = () => {
@@ -54,6 +70,8 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
     setEditDesc('');
     setEditAmount('');
     setEditPayment('cash');
+    setEditCustomer('');
+    setEditCategory('Sales');
   };
 
   const saveEdit = async () => {
@@ -64,6 +82,8 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
         description: editDesc.trim(),
         amount: Number(editAmount),
         payment_method: editPayment,
+        customer_name: editCustomer.trim() || undefined,
+        category: editCategory,
       });
       cancelEdit();
     } catch (err) {
@@ -171,14 +191,29 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                           value={editDesc}
                           onChange={e => setEditDesc(e.target.value)}
                           className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                          placeholder="Sale description..."
                           autoFocus
                         />
                       </td>
-                      <td className="py-3 px-4 font-medium text-slate-500 text-[11px]">{s.customer_name || 'Walk-in'}</td>
                       <td className="py-3 px-4">
-                        <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
-                          {s.category}
-                        </span>
+                        <input
+                          type="text"
+                          value={editCustomer}
+                          onChange={e => setEditCustomer(e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                          placeholder="Customer name..."
+                        />
+                      </td>
+                      <td className="py-3 px-4">
+                        <select
+                          value={editCategory}
+                          onChange={e => setEditCategory(e.target.value)}
+                          className="px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                        >
+                          {SALE_CATEGORIES.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="py-3 px-4">
                         <select
@@ -231,7 +266,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                     <>
                       <td className="py-3.5 px-6 font-medium text-slate-500 whitespace-nowrap">{s.date}</td>
                       <td className="py-3.5 px-4 font-bold text-slate-900">{s.description}</td>
-                      <td className="py-3.5 px-4 font-medium text-slate-700">{s.customer_name || 'Walk-in Store Customer'}</td>
+                      <td className="py-3.5 px-4 font-medium text-slate-700">{s.customer_name || 'Walk-in Customer'}</td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
                           {s.category}
@@ -298,7 +333,9 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-xs font-bold text-slate-800">{sale.description}</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">{sale.date} · {sale.payment_method?.toUpperCase()}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        {sale.customer_name || 'Walk-in'} · {sale.date} · {sale.payment_method?.toUpperCase()}
+                      </div>
                     </div>
                     <div className="text-sm font-black font-mono text-[#087443]">+{formatINR(sale.amount)}</div>
                   </div>
