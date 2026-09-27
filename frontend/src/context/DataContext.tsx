@@ -455,7 +455,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addSale = async (data: { customer_name?: string; items_description: string; amount: number; payment_method: any; category?: string; items?: any[] }) => {
     if (supabase) {
-      const { error } = await supabase.rpc('create_sale_transaction', {
+      const { data: rpcRes, error } = await supabase.rpc('create_sale_transaction', {
         p_description: data.items_description || 'Sale',
         p_items: data.items || [],
         p_payment_method: data.payment_method || 'cash',
@@ -465,18 +465,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Failed to add sale:', error);
         throw error;
       }
+
+      // Sync customer_name & category to the created transaction entry
+      const saleId = rpcRes?.sale_id;
+      if (saleId) {
+        const txUpdates: Record<string, any> = {};
+        if (data.customer_name) txUpdates.customer_name = data.customer_name;
+        if (data.category) txUpdates.category = data.category;
+        if (Object.keys(txUpdates).length > 0) {
+          await supabase.from('transactions').update(txUpdates).eq('reference_id', saleId);
+        }
+      }
+
       await fetchSupabaseData();
     } else {
       const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
       await addTransaction({
         date: todayStr,
-        description: `${data.items_description} (${data.customer_name || 'Walk-in'})`,
+        description: data.items_description,
         category: data.category || 'Sales',
         type: 'income',
         payment_method: data.payment_method,
         amount: Number(data.amount),
         status: 'Paid',
-        customer_name: data.customer_name
+        customer_name: data.customer_name || 'Walk-in Store Customer'
       });
     }
   };

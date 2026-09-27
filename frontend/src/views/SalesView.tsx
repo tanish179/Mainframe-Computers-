@@ -2,26 +2,26 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { formatINR } from '../services/dashboardService';
 import { Transaction, PaymentMethod } from '../types';
-import { Search, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, X, Check, User, Wrench, Printer, Laptop, Disc, Shield, HardDrive } from 'lucide-react';
 
 interface SalesViewProps {
   onOpenAddSale: () => void;
 }
 
 const SALE_CATEGORIES = [
-  'Sales',
+  'Printer Repair',
+  'Cartridge & Toner Refill',
+  'Laptop & PC Repair',
+  'Software & OS Installation',
   'Hardware Sales',
-  'Software Sales',
-  'Service Charges',
-  'Accessories',
   'CCTV Installation',
-  'Repair Charges',
-  'AMC Renewal',
+  'AMC Service',
+  'Service Charges',
   'Other',
 ];
 
 export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
-  const { transactions, updateTransaction, deleteTransaction } = useData();
+  const { transactions, updateTransaction, deleteTransaction, customers } = useData();
   const [search, setSearch] = useState('');
 
   // Edit state
@@ -30,7 +30,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
   const [editAmount, setEditAmount] = useState('');
   const [editPayment, setEditPayment] = useState<PaymentMethod>('cash');
   const [editCustomer, setEditCustomer] = useState('');
-  const [editCategory, setEditCategory] = useState('Sales');
+  const [editCategory, setEditCategory] = useState('Printer Repair');
   const [editSaving, setEditSaving] = useState(false);
 
   // Delete state
@@ -62,7 +62,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
     setEditAmount(String(sale.amount));
     setEditPayment(sale.payment_method);
     setEditCustomer(sale.customer_name || '');
-    setEditCategory(sale.category || 'Sales');
+    setEditCategory(sale.category || 'Service Charges');
   };
 
   const cancelEdit = () => {
@@ -71,7 +71,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
     setEditAmount('');
     setEditPayment('cash');
     setEditCustomer('');
-    setEditCategory('Sales');
+    setEditCategory('Service Charges');
   };
 
   const saveEdit = async () => {
@@ -106,16 +106,84 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
     }
   };
 
+  const getCategoryBadge = (category: string) => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('printer') || cat.includes('toner') || cat.includes('cartridge')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-[11px] font-semibold">
+          <Printer className="w-3 h-3 stroke-[2.2]" />
+          <span>{category}</span>
+        </span>
+      );
+    } else if (cat.includes('laptop') || cat.includes('pc repair') || cat.includes('repair')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-semibold">
+          <Laptop className="w-3 h-3 stroke-[2.2]" />
+          <span>{category}</span>
+        </span>
+      );
+    } else if (cat.includes('software') || cat.includes('os')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 text-[11px] font-semibold">
+          <Disc className="w-3 h-3 stroke-[2.2]" />
+          <span>{category}</span>
+        </span>
+      );
+    } else if (cat.includes('hardware') || cat.includes('sale')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+          <HardDrive className="w-3 h-3 stroke-[2.2]" />
+          <span>{category}</span>
+        </span>
+      );
+    } else if (cat.includes('amc')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-[11px] font-semibold">
+          <Shield className="w-3 h-3 stroke-[2.2]" />
+          <span>{category}</span>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold">
+        <Wrench className="w-3 h-3 stroke-[2.2]" />
+        <span>{category}</span>
+      </span>
+    );
+  };
+
+  const renderCustomerCell = (customerName?: string) => {
+    const name = (customerName || '').trim();
+    if (!name || name === 'Walk-in Store Customer' || name === 'Walk-in Customer' || name.toLowerCase().includes('walk-in')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11.5px] font-medium border border-slate-200/60">
+          Walk-in Customer
+        </span>
+      );
+    }
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-800 text-[11px] font-black flex items-center justify-center flex-shrink-0 border border-blue-200">
+          {name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <div className="font-extrabold text-slate-900 text-xs">{name}</div>
+          <div className="text-[9.5px] font-bold text-blue-600 uppercase tracking-wide">Regular Customer</div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 max-w-[1520px] mx-auto pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-            Sales & POS Register
+            Sales & Service Register
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Over-the-counter hardware billing, laptop sales, peripherals and invoice records
+            Over-the-counter billing, printer servicing, toner refills, laptop repairs & regular customer sales
           </p>
         </div>
 
@@ -124,7 +192,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
           className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#087443] hover:bg-[#065F37] text-white text-xs font-bold rounded-xl shadow-xs transition-all"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>+ Add Customer Sale</span>
+          <span>+ Record Service / Sale</span>
         </button>
       </div>
 
@@ -133,7 +201,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
         <div className="bg-white p-4 rounded-xl border border-slate-200">
           <span className="text-[11px] font-bold text-slate-400 uppercase">Gross Sales Revenue</span>
           <div className="text-2xl font-black text-[#087443] font-mono mt-1">{formatINR(totalSalesRevenue)}</div>
-          <span className="text-[10px] text-slate-500">Across {sales.length} customer orders</span>
+          <span className="text-[10px] text-slate-500">Across {sales.length} customer records</span>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200">
           <span className="text-[11px] font-bold text-slate-400 uppercase">Average Order Value (AOV)</span>
@@ -155,7 +223,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search sale description, customer, item..."
+            placeholder="Search service, customer name, printer, toner..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#087443]/20 focus:border-[#087443]"
@@ -170,11 +238,11 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
                 <th className="py-3.5 px-6">Date</th>
-                <th className="py-3.5 px-4">Sold Item / Description</th>
-                <th className="py-3.5 px-4">Customer</th>
-                <th className="py-3.5 px-4">Category</th>
+                <th className="py-3.5 px-4">Customer Name</th>
+                <th className="py-3.5 px-4">Service / Type</th>
+                <th className="py-3.5 px-4">Work Done / Item Details</th>
                 <th className="py-3.5 px-4">Payment Method</th>
-                <th className="py-3.5 px-6 text-right">Amount</th>
+                <th className="py-3.5 px-6 text-right">Price (INR)</th>
                 <th className="py-3.5 px-4 text-center w-[100px]">Actions</th>
               </tr>
             </thead>
@@ -188,21 +256,18 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                       <td className="py-3 px-4">
                         <input
                           type="text"
-                          value={editDesc}
-                          onChange={e => setEditDesc(e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
-                          placeholder="Sale description..."
-                          autoFocus
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="text"
+                          list="edit-customer-list"
                           value={editCustomer}
                           onChange={e => setEditCustomer(e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
                           placeholder="Customer name..."
                         />
+                        <datalist id="edit-customer-list">
+                          <option value="Walk-in Store Customer" />
+                          {customers.map(c => (
+                            <option key={c.id} value={c.name} />
+                          ))}
+                        </datalist>
                       </td>
                       <td className="py-3 px-4">
                         <select
@@ -214,6 +279,16 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                             <option key={cat} value={cat}>{cat}</option>
                           ))}
                         </select>
+                      </td>
+                      <td className="py-3 px-4">
+                        <input
+                          type="text"
+                          value={editDesc}
+                          onChange={e => setEditDesc(e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#087443]/30 focus:border-[#087443]"
+                          placeholder="Service description / work done..."
+                          autoFocus
+                        />
                       </td>
                       <td className="py-3 px-4">
                         <select
@@ -265,13 +340,13 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                     /* ---- DISPLAY MODE ROW ---- */
                     <>
                       <td className="py-3.5 px-6 font-medium text-slate-500 whitespace-nowrap">{s.date}</td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900">{s.description}</td>
-                      <td className="py-3.5 px-4 font-medium text-slate-700">{s.customer_name || 'Walk-in Customer'}</td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">
-                          {s.category}
-                        </span>
+                      <td className="py-3.5 px-4 font-medium text-slate-800">
+                        {renderCustomerCell(s.customer_name)}
                       </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {getCategoryBadge(s.category)}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900">{s.description}</td>
                       <td className="py-3.5 px-4 uppercase font-mono text-[11px] text-slate-600">{s.payment_method}</td>
                       <td className="py-3.5 px-6 text-right font-black font-mono text-[#087443] text-[13px]">
                         +{formatINR(s.amount)}
@@ -302,8 +377,8 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400">
-                    <div className="text-sm font-semibold text-slate-600 mb-1">No sales records found</div>
-                    <div className="text-xs text-slate-400">Click "+ Add Customer Sale" to record a sale.</div>
+                    <div className="text-sm font-semibold text-slate-600 mb-1">No sales or service records found</div>
+                    <div className="text-xs text-slate-400">Click "+ Record Service / Sale" to add a new record.</div>
                   </td>
                 </tr>
               )}
@@ -321,8 +396,8 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                 <Trash2 className="w-5 h-5 text-red-600 stroke-[2]" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Delete this sale?</h3>
-                <p className="text-xs text-slate-500 mt-0.5">This action cannot be undone. The sale record will be permanently removed.</p>
+                <h3 className="text-sm font-bold text-slate-900">Delete this record?</h3>
+                <p className="text-xs text-slate-500 mt-0.5">This action cannot be undone. The record will be permanently removed.</p>
               </div>
             </div>
 
@@ -360,7 +435,7 @@ export const SalesView: React.FC<SalesViewProps> = ({ onOpenAddSale }) => {
                 ) : (
                   <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
                 )}
-                <span>Delete Sale</span>
+                <span>Delete Record</span>
               </button>
             </div>
           </div>
