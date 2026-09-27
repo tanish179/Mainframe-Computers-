@@ -28,31 +28,35 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     'Printer', 'Cartridge', 'Cable', 'CCTV', 'Accessory', 'Other'
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !sellingPrice) return;
 
-    const generatedSku = sku || `${brand.slice(0, 3).toUpperCase()}-${category.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+    try {
+      const generatedSku = sku || `${brand.slice(0, 3).toUpperCase()}-${category.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`;
 
-    addProduct({
-      name,
-      category,
-      sku: generatedSku,
-      brand,
-      model: model || 'Standard',
-      purchase_price: parseFloat(purchasePrice) || 0,
-      selling_price: parseFloat(sellingPrice) || 0,
-      stock_quantity: parseInt(stockQuantity, 10) || 0,
-      minimum_stock: parseInt(minimumStock, 10) || 2,
-      supplier_id: supplierId || undefined
-    });
+      await addProduct({
+        name,
+        category,
+        sku: generatedSku,
+        brand,
+        model: model || 'Standard',
+        purchase_price: parseFloat(purchasePrice) || 0,
+        selling_price: parseFloat(sellingPrice) || 0,
+        stock_quantity: parseInt(stockQuantity, 10) || 0,
+        minimum_stock: parseInt(minimumStock, 10) || 2,
+        supplier_id: supplierId || undefined
+      });
 
-    onClose();
-    setName('');
-    setModel('');
-    setPurchasePrice('');
-    setSellingPrice('');
-    setStockQuantity('5');
+      onClose();
+      setName('');
+      setModel('');
+      setPurchasePrice('');
+      setSellingPrice('');
+      setStockQuantity('5');
+    } catch (err: any) {
+      alert(`Add product error: ${err.message || err}`);
+    }
   };
 
   return (

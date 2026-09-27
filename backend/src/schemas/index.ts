@@ -122,25 +122,27 @@ export const serviceJobPartSchema = z.object({
 
 // Sale Schemas
 export const saleItemSchema = z.object({
-  product_id: z.string().uuid(),
-  quantity: z.number().int().positive('Quantity must be greater than 0'),
+  product_id: z.string().uuid().optional().nullable(),
+  name: z.string().optional().nullable(),
+  quantity: z.number().int().positive('Quantity must be greater than 0').default(1),
   unit_price: z.number().min(0, 'Unit price must be non-negative'),
   discount: z.number().min(0).default(0),
 });
 
 export const saleSchema = z.object({
   customer_id: z.string().uuid().optional().nullable(),
-  items: z.array(saleItemSchema).min(1, 'Sale must include at least one item'),
+  description: z.string().optional().nullable(),
+  items: z.array(saleItemSchema).optional().default([]),
   discount: z.number().min(0).default(0),
   tax: z.number().min(0).default(0),
   notes: z.string().optional().nullable(),
-  payment_method: z.enum(['cash', 'UPI', 'card', 'bank_transfer', 'other']).optional(),
+  payment_method: z.enum(['cash', 'UPI', 'card', 'bank_transfer', 'other']).optional().default('cash'),
   amount_paid: z.number().min(0).optional(),
 });
 
 // Invoice Schemas
 export const invoiceSchema = z.object({
-  customer_id: z.string().uuid(),
+  customer_id: z.string().uuid().optional().nullable(),
   sale_id: z.string().uuid().optional().nullable(),
   service_job_id: z.string().uuid().optional().nullable(),
   subtotal: z.number().min(0),
@@ -153,7 +155,7 @@ export const invoiceSchema = z.object({
 
 // Payment Schemas
 export const paymentSchema = z.object({
-  customer_id: z.string().uuid(),
+  customer_id: z.string().uuid().optional().nullable(),
   invoice_id: z.string().uuid().optional().nullable(),
   sale_id: z.string().uuid().optional().nullable(),
   service_job_id: z.string().uuid().optional().nullable(),

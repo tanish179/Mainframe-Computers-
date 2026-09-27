@@ -14,7 +14,7 @@ export async function recordPayment(
     .from('payments')
     .insert([
       {
-        customer_id: validated.customer_id,
+        customer_id: validated.customer_id || null,
         invoice_id: validated.invoice_id || null,
         sale_id: validated.sale_id || null,
         service_job_id: validated.service_job_id || null,

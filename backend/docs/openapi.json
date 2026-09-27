@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Mainframe Computers Business Management API",
-    "description": "API for ChatGPT Custom GPT to query business summary, customers, sales, repair service jobs, inventory, expenses, and profit for Mainframe Computers.",
+    "description": "API for ChatGPT Custom GPT and external clients to perform real-time business operations for Mainframe Computers.",
     "version": "1.0.0"
   },
   "servers": [
@@ -11,11 +11,25 @@
       "description": "Local Development Server"
     }
   ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
   "paths": {
     "/dashboard/summary": {
       "get": {
         "operationId": "get_business_summary",
-        "summary": "Get overall business financial summary and active job metrics",
+        "summary": "Get overall business financial summary and metrics",
         "parameters": [
           {
             "name": "period",
@@ -27,79 +41,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Business summary metrics"
-          }
+          "200": { "description": "Business summary metrics" }
         }
-      }
-    },
-    "/customers": {
-      "get": {
-        "operationId": "get_customers",
-        "summary": "Get list of customers with search query filter",
-        "parameters": [
-          { "name": "query", "in": "query", "schema": { "type": "string" } },
-          { "name": "status", "in": "query", "schema": { "type": "string" } }
-        ],
-        "responses": { "200": { "description": "Customer list" } }
-      },
-      "post": {
-        "operationId": "create_customer",
-        "summary": "Create a new customer",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "phone"],
-                "properties": {
-                  "name": { "type": "string" },
-                  "phone": { "type": "string" },
-                  "email": { "type": "string" },
-                  "address": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "201": { "description": "Customer created" } }
-      }
-    },
-    "/services/jobs": {
-      "get": {
-        "operationId": "get_service_jobs",
-        "summary": "Get computer repair service jobs",
-        "parameters": [
-          { "name": "status", "in": "query", "schema": { "type": "string" } },
-          { "name": "query", "in": "query", "schema": { "type": "string" } }
-        ],
-        "responses": { "200": { "description": "List of repair jobs" } }
-      },
-      "post": {
-        "operationId": "create_service_job",
-        "summary": "Create a new repair service job",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["customer_id", "device_type", "device_brand", "device_model", "customer_problem"],
-                "properties": {
-                  "customer_id": { "type": "string" },
-                  "device_type": { "type": "string" },
-                  "device_brand": { "type": "string" },
-                  "device_model": { "type": "string" },
-                  "customer_problem": { "type": "string" },
-                  "estimated_cost": { "type": "number" },
-                  "advance_paid": { "type": "number" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "201": { "description": "Service job created" } }
       }
     },
     "/sales": {
@@ -110,34 +53,181 @@
       },
       "post": {
         "operationId": "create_sale",
-        "summary": "Create a new product sale",
+        "summary": "Create a new sale (inventory product or service sale)",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["items"],
                 "properties": {
-                  "customer_id": { "type": "string" },
+                  "customer_id": { "type": "string", "nullable": true },
+                  "description": { "type": "string" },
                   "items": {
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": ["product_id", "quantity", "unit_price"],
+                      "required": ["unit_price"],
                       "properties": {
-                        "product_id": { "type": "string" },
-                        "quantity": { "type": "integer" },
-                        "unit_price": { "type": "number" }
+                        "product_id": { "type": "string", "nullable": true },
+                        "name": { "type": "string" },
+                        "quantity": { "type": "integer", "default": 1 },
+                        "unit_price": { "type": "number" },
+                        "discount": { "type": "number", "default": 0 }
                       }
                     }
-                  }
+                  },
+                  "discount": { "type": "number", "default": 0 },
+                  "tax": { "type": "number", "default": 0 },
+                  "payment_method": { "type": "string", "enum": ["cash", "UPI", "card", "bank_transfer", "other"], "default": "cash" },
+                  "amount_paid": { "type": "number" },
+                  "notes": { "type": "string", "nullable": true }
                 }
               }
             }
           }
         },
-        "responses": { "201": { "description": "Sale completed" } }
+        "responses": { "201": { "description": "Sale created successfully" } }
+      }
+    },
+    "/expenses": {
+      "get": {
+        "operationId": "get_expenses",
+        "summary": "Get expense records",
+        "responses": { "200": { "description": "List of expenses" } }
+      },
+      "post": {
+        "operationId": "create_expense",
+        "summary": "Record a new expense",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["category", "description", "amount", "payment_method"],
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "Rent", "Electricity", "Internet", "Salary", "Transport", "Marketing",
+                      "Software", "Hardware Purchase", "Inventory Purchase", "Tools", "Maintenance", "Other"
+                    ]
+                  },
+                  "description": { "type": "string" },
+                  "amount": { "type": "number" },
+                  "vendor": { "type": "string", "nullable": true },
+                  "payment_method": { "type": "string", "enum": ["cash", "UPI", "card", "bank_transfer", "other"] },
+                  "expense_date": { "type": "string" },
+                  "reference": { "type": "string", "nullable": true },
+                  "status": { "type": "string", "enum": ["paid", "pending", "cancelled"], "default": "paid" },
+                  "notes": { "type": "string", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Expense recorded successfully" } }
+      }
+    },
+    "/payments": {
+      "get": {
+        "operationId": "get_payments",
+        "summary": "Get payment records",
+        "responses": { "200": { "description": "List of payments" } }
+      },
+      "post": {
+        "operationId": "record_payment",
+        "summary": "Record a payment received",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "payment_method"],
+                "properties": {
+                  "customer_id": { "type": "string", "nullable": true },
+                  "invoice_id": { "type": "string", "nullable": true },
+                  "sale_id": { "type": "string", "nullable": true },
+                  "amount": { "type": "number" },
+                  "payment_method": { "type": "string", "enum": ["cash", "UPI", "card", "bank_transfer", "other"] },
+                  "payment_date": { "type": "string" },
+                  "reference": { "type": "string", "nullable": true },
+                  "notes": { "type": "string", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Payment recorded successfully" } }
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "get_products",
+        "summary": "Get inventory products",
+        "responses": { "200": { "description": "List of products" } }
+      },
+      "post": {
+        "operationId": "add_product",
+        "summary": "Add a new product to inventory",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "category", "sku", "brand", "model", "purchase_price", "selling_price", "stock_quantity"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "Laptop", "Desktop", "CPU", "GPU", "RAM", "SSD", "HDD",
+                      "Motherboard", "Power Supply", "Monitor", "Keyboard", "Mouse",
+                      "Printer", "Cartridge", "Cable", "CCTV", "Accessory", "Other"
+                    ]
+                  },
+                  "sku": { "type": "string" },
+                  "brand": { "type": "string" },
+                  "model": { "type": "string" },
+                  "purchase_price": { "type": "number" },
+                  "selling_price": { "type": "number" },
+                  "stock_quantity": { "type": "integer" },
+                  "minimum_stock_level": { "type": "integer", "default": 2 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Product created successfully" } }
+      }
+    },
+    "/inventory/transactions": {
+      "post": {
+        "operationId": "update_inventory",
+        "summary": "Record an inventory stock transaction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "type", "quantity"],
+                "properties": {
+                  "product_id": { "type": "string" },
+                  "type": { "type": "string", "enum": ["stock_in", "stock_out", "adjustment", "damaged", "returned", "used_in_service"] },
+                  "quantity": { "type": "integer" },
+                  "reference_type": { "type": "string", "nullable": true },
+                  "reference_id": { "type": "string", "nullable": true },
+                  "notes": { "type": "string", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Inventory transaction recorded" } }
       }
     },
     "/finance/profit": {

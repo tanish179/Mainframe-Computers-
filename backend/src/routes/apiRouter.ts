@@ -388,7 +388,25 @@ apiRouter.post('/finance/expenses', async (req: AuthenticatedRequest, res) => {
   }
 });
 
+apiRouter.post('/expenses', async (req: AuthenticatedRequest, res) => {
+  try {
+    const expense = await createExpense(req.body, req.user?.id);
+    res.status(201).json(expense);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 apiRouter.get('/finance/expenses', async (req, res) => {
+  try {
+    const result = await getExpenses(req.query as any);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+apiRouter.get('/expenses', async (req, res) => {
   try {
     const result = await getExpenses(req.query as any);
     res.json(result);

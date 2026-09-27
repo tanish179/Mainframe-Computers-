@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { 
   Customer, 
   Supplier, 
@@ -51,17 +51,18 @@ interface DataContextType {
   activeRepairs: ServiceJob[];
 
   // Mutator actions
-  addTransaction: (tx: Omit<Transaction, 'id' | 'created_at'>) => void;
-  addSale: (data: { customer_name: string; items_description: string; amount: number; payment_method: any; category: string }) => void;
-  addExpense: (data: { description: string; category: string; amount: number; payment_method: any; vendor?: string; notes?: string }) => void;
-  newRepair: (data: Omit<ServiceJob, 'id' | 'job_number' | 'created_at'>) => void;
-  updateRepairStatus: (jobId: string, status: ServiceJobStatus) => void;
-  addCustomer: (cust: Omit<Customer, 'id' | 'created_at' | 'total_spent' | 'pending_amount'>) => void;
-  addProduct: (prod: Omit<Product, 'id' | 'created_at' | 'status'>) => void;
-  recordPayment: (pendingId: string, amountPaid: number, paymentMethod: any) => void;
+  addTransaction: (tx: Omit<Transaction, 'id' | 'created_at'>) => Promise<void>;
+  addSale: (data: { customer_name?: string; items_description: string; amount: number; payment_method: any; category?: string; items?: any[] }) => Promise<void>;
+  addExpense: (data: { description: string; category: string; amount: number; payment_method: any; vendor?: string; notes?: string }) => Promise<void>;
+  newRepair: (data: Omit<ServiceJob, 'id' | 'job_number' | 'created_at'>) => Promise<void>;
+  updateRepairStatus: (jobId: string, status: ServiceJobStatus) => Promise<void>;
+  addCustomer: (cust: Omit<Customer, 'id' | 'created_at' | 'total_spent' | 'pending_amount'>) => Promise<void>;
+  addProduct: (prod: Omit<Product, 'id' | 'created_at' | 'status'>) => Promise<void>;
+  recordPayment: (pendingId: string, amountPaid: number, paymentMethod: any) => Promise<void>;
   toggleTaskStatus: (taskId: string) => void;
   resetToDemoData: () => void;
   isSupabaseLive: boolean;
+  refreshData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -117,109 +118,96 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : INITIAL_APPOINTMENTS;
   });
 
-  // Fetch initial data from Supabase if connected
-  useEffect(() => {
+  // Fetch initial & updated data from Supabase
+  const fetchSupabaseData = useCallback(async () => {
     const client = supabase;
     if (!client) return;
 
-    const fetchSupabaseData = async () => {
+    try {
+      // Fetch Customers safely
       try {
-        // Fetch Customers safely
-        try {
-          const { data: dbCustomers, error: custErr } = await client.from('customers').select('*');
-          if (!custErr && dbCustomers && dbCustomers.length > 0) {
-            const mapped: Customer[] = dbCustomers.map((c: any) => ({
-              id: c.id,
-              name: c.name,
-              phone: c.phone,
-              email: c.email || '',
-              address: c.address || '',
-              status: c.status || 'active',
-              notes: c.notes || '',
-              total_spent: 0,
-              pending_amount: 0,
-              created_at: c.created_at,
-            }));
-            setCustomers(mapped);
-          }
-        } catch (_) {}
-
-        // Fetch Products
-        const { data: dbProducts } = await client.from('products').select('*');
-        if (dbProducts && dbProducts.length > 0) {
-          const mapped: Product[] = dbProducts.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            category: p.category,
-            sku: p.sku,
-            brand: p.brand,
-            model: p.model,
-            purchase_price: Number(p.purchase_price || 0),
-            selling_price: Number(p.selling_price || 0),
-            stock_quantity: p.stock_quantity,
-            minimum_stock: p.minimum_stock_level || 2,
-            supplier_id: p.supplier_id,
-            status: p.stock_quantity <= 0 ? 'Out of Stock' : (p.stock_quantity <= p.minimum_stock_level ? 'Low Stock' : 'In Stock'),
-            created_at: p.created_at,
+        const { data: dbCustomers, error: custErr } = await client.from('customers').select('*');
+        if (!custErr && dbCustomers && dbCustomers.length > 0) {
+          const mapped: Customer[] = dbCustomers.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone,
+            email: c.email || '',
+            address: c.address || '',
+            status: c.status || 'active',
+            notes: c.notes || '',
+            total_spent: 0,
+            pending_amount: 0,
+            created_at: c.created_at,
           }));
-          setProducts(mapped);
+          setCustomers(mapped);
         }
+      } catch (_) {}
 
-        // Fetch Service Jobs safely
-        try {
-          const { data: dbJobs, error: jobsErr } = await client.from('service_jobs').select('*, customers(name, phone)');
-          if (!jobsErr && dbJobs && dbJobs.length > 0) {
-            const mapped: ServiceJob[] = dbJobs.map((j: any) => ({
-              id: j.id,
-              job_number: j.job_number,
-              customer_id: j.customer_id,
-              customer_name: j.customers?.name || 'Customer',
-              customer_phone: j.customers?.phone || '',
-              device_type: j.device_type,
-              brand: j.device_brand,
-              model: j.device_model,
-              serial_number: j.serial_number || '',
-              problem_description: j.customer_problem,
-              diagnosis: j.diagnosis || '',
-              technician_notes: j.technician_notes || '',
-              repair_status: j.status,
-              priority: j.priority,
-              estimated_cost: Number(j.estimated_cost || 0),
-              final_cost: Number(j.final_cost || 0),
-              advance_paid: Number(j.advance_paid || 0),
-              remaining_amount: Number(j.remaining_amount || 0),
-              received_date: j.received_date,
-              expected_date: j.expected_date || '',
-              delivered_date: j.delivered_date || '',
-              created_at: j.created_at,
-            }));
-            setServiceJobs(mapped);
-          }
-        } catch (_) {}
-
-        // Fetch Transactions
-        const { data: dbTx } = await client.from('transactions').select('*');
-        if (dbTx && dbTx.length > 0) {
-          const mapped: Transaction[] = dbTx.map((t: any) => ({
-            id: t.id,
-            date: t.transaction_date ? t.transaction_date.split('T')[0] : '',
-            description: t.description,
-            category: t.type === 'income' ? 'Sales' : 'Maintenance',
-            type: t.type === 'income' ? 'income' : 'expense',
-            payment_method: t.payment_method || 'cash',
-            amount: Number(t.amount || 0),
-            status: 'Paid',
-            created_at: t.created_at,
-          }));
-          setTransactions(mapped);
-        }
-      } catch (err) {
-        console.warn('Failed loading initial data from Supabase:', err);
+      // Fetch Products
+      const { data: dbProducts, error: prodErr } = await client.from('products').select('*');
+      if (!prodErr && dbProducts && dbProducts.length > 0) {
+        const mapped: Product[] = dbProducts.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          sku: p.sku,
+          brand: p.brand,
+          model: p.model,
+          purchase_price: Number(p.purchase_price || 0),
+          selling_price: Number(p.selling_price || 0),
+          stock_quantity: p.stock_quantity,
+          minimum_stock: p.minimum_stock_level || 2,
+          supplier_id: p.supplier_id,
+          status: p.stock_quantity <= 0 ? 'Out of Stock' : (p.stock_quantity <= p.minimum_stock_level ? 'Low Stock' : 'In Stock'),
+          created_at: p.created_at,
+        }));
+        setProducts(mapped);
       }
-    };
 
+      // Fetch Transactions
+      const { data: dbTx, error: txErr } = await client.from('transactions').select('*').order('created_at', { ascending: false });
+      if (!txErr && dbTx && dbTx.length > 0) {
+        const mapped: Transaction[] = dbTx.map((t: any) => ({
+          id: t.id,
+          date: t.transaction_date ? t.transaction_date.split('T')[0] : new Date().toISOString().split('T')[0],
+          description: t.description,
+          category: t.type === 'income' ? 'Sales' : 'Maintenance',
+          type: t.type === 'income' ? 'income' : 'expense',
+          payment_method: t.payment_method || 'cash',
+          amount: Number(t.amount || 0),
+          status: 'Paid',
+          created_at: t.created_at,
+        }));
+        setTransactions(mapped);
+      }
+    } catch (err) {
+      console.warn('Failed loading data from Supabase:', err);
+    }
+  }, []);
+
+  // Set up Supabase Realtime Subscriptions & initial fetch
+  useEffect(() => {
     fetchSupabaseData();
-  }, [isSupabaseLive]);
+
+    const client = supabase;
+    if (!client) return;
+
+    const channel = client
+      .channel('public_db_realtime_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public' },
+        () => {
+          fetchSupabaseData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      client.removeChannel(channel);
+    };
+  }, [fetchSupabaseData, isSupabaseLive]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -265,55 +253,62 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const lowStockItems = products.filter(p => p.stock_quantity <= p.minimum_stock);
   const activeRepairs = serviceJobs.filter(j => j.repair_status !== 'delivered' && j.repair_status !== 'cancelled');
 
-  // Actions
-  const addTransaction = (tx: Omit<Transaction, 'id' | 'created_at'>) => {
-    const newTx: Transaction = {
-      ...tx,
-      id: `tx-${Date.now()}`,
-      created_at: new Date().toISOString()
-    };
-    setTransactions(prev => [newTx, ...prev]);
-
+  // Actions with proper Error Handling & Realtime database source-of-truth
+  const addTransaction = async (tx: Omit<Transaction, 'id' | 'created_at'>) => {
     if (supabase) {
-      supabase.from('transactions').insert({
-        description: newTx.description,
-        type: newTx.type,
-        amount: newTx.amount,
-        payment_method: newTx.payment_method,
+      const { error } = await supabase.from('transactions').insert({
+        description: tx.description,
+        type: tx.type,
+        amount: tx.amount,
+        payment_method: tx.payment_method,
         status: 'completed'
-      }).then();
+      });
+      if (error) {
+        console.error('Failed to add transaction:', error);
+        throw error;
+      }
+      await fetchSupabaseData();
+    } else {
+      const newTx: Transaction = {
+        ...tx,
+        id: `tx-${Date.now()}`,
+        created_at: new Date().toISOString()
+      };
+      setTransactions(prev => [newTx, ...prev]);
     }
   };
 
-  const addSale = (data: { customer_name: string; items_description: string; amount: number; payment_method: any; category: string }) => {
-    const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
-    addTransaction({
-      date: todayStr,
-      description: `${data.items_description} (${data.customer_name})`,
-      category: data.category || 'Sales',
-      type: 'income',
-      payment_method: data.payment_method,
-      amount: Number(data.amount),
-      status: 'Paid',
-      customer_name: data.customer_name
-    });
+  const addSale = async (data: { customer_name?: string; items_description: string; amount: number; payment_method: any; category?: string; items?: any[] }) => {
+    if (supabase) {
+      const { error } = await supabase.rpc('create_sale_transaction', {
+        p_description: data.items_description || 'Sale',
+        p_items: data.items || [],
+        p_payment_method: data.payment_method || 'cash',
+        p_amount_paid: Number(data.amount)
+      });
+      if (error) {
+        console.error('Failed to add sale:', error);
+        throw error;
+      }
+      await fetchSupabaseData();
+    } else {
+      const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
+      await addTransaction({
+        date: todayStr,
+        description: `${data.items_description} (${data.customer_name || 'Walk-in'})`,
+        category: data.category || 'Sales',
+        type: 'income',
+        payment_method: data.payment_method,
+        amount: Number(data.amount),
+        status: 'Paid',
+        customer_name: data.customer_name
+      });
+    }
   };
 
-  const addExpense = (data: { description: string; category: string; amount: number; payment_method: any; vendor?: string; notes?: string }) => {
-    const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
-    addTransaction({
-      date: todayStr,
-      description: data.vendor ? `${data.description} (${data.vendor})` : data.description,
-      category: data.category || 'Maintenance',
-      type: 'expense',
-      payment_method: data.payment_method,
-      amount: Number(data.amount),
-      status: 'Paid',
-      notes: data.notes
-    });
-
+  const addExpense = async (data: { description: string; category: string; amount: number; payment_method: any; vendor?: string; notes?: string }) => {
     if (supabase) {
-      supabase.from('expenses').insert({
+      const { data: exp, error: expErr } = await supabase.from('expenses').insert({
         category: data.category || 'Other',
         description: data.description,
         amount: Number(data.amount),
@@ -321,11 +316,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         payment_method: data.payment_method || 'cash',
         notes: data.notes || null,
         status: 'paid'
-      }).then();
+      }).select().single();
+
+      if (expErr) {
+        console.error('Failed to add expense:', expErr);
+        throw expErr;
+      }
+
+      const { error: txErr } = await supabase.from('transactions').insert({
+        type: 'expense',
+        amount: Number(data.amount),
+        reference_type: 'expense',
+        reference_id: exp.id,
+        description: `Expense (${data.category}): ${data.description}`,
+        payment_method: data.payment_method || 'cash',
+        status: 'completed'
+      });
+      if (txErr) console.error('Failed to insert transaction entry:', txErr);
+
+      await fetchSupabaseData();
+    } else {
+      const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
+      await addTransaction({
+        date: todayStr,
+        description: data.vendor ? `${data.description} (${data.vendor})` : data.description,
+        category: data.category || 'Maintenance',
+        type: 'expense',
+        payment_method: data.payment_method,
+        amount: Number(data.amount),
+        status: 'Paid',
+        notes: data.notes
+      });
     }
   };
 
-  const newRepair = (data: Omit<ServiceJob, 'id' | 'job_number' | 'created_at'>) => {
+  const newRepair = async (data: Omit<ServiceJob, 'id' | 'job_number' | 'created_at'>) => {
     const nextNum = 1050 + serviceJobs.length;
     const newJob: ServiceJob = {
       ...data,
@@ -334,39 +359,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: new Date().toISOString()
     };
     setServiceJobs(prev => [newJob, ...prev]);
-
-    if (data.advance_paid > 0) {
-      const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
-      addTransaction({
-        date: todayStr,
-        description: `Advance for ${data.device_type} Repair (${data.customer_name})`,
-        category: 'Repair Service',
-        type: 'income',
-        payment_method: 'UPI',
-        amount: data.advance_paid,
-        status: 'Paid',
-        customer_name: data.customer_name
-      });
-    }
-
-    if (data.remaining_amount > 0) {
-      setPendingPayments(prev => [
-        {
-          id: `pend-${Date.now()}`,
-          customer: data.customer_name,
-          customer_id: data.customer_id,
-          invoice: `INV-REP-${nextNum}`,
-          amount: data.remaining_amount,
-          due_date: 'On Delivery',
-          status: 'Pending',
-          phone: data.customer_phone
-        },
-        ...prev
-      ]);
-    }
   };
 
-  const updateRepairStatus = (jobId: string, status: ServiceJobStatus) => {
+  const updateRepairStatus = async (jobId: string, status: ServiceJobStatus) => {
     setServiceJobs(prev => prev.map(j => {
       if (j.id === jobId) {
         return {
@@ -377,13 +372,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return j;
     }));
-
-    if (supabase) {
-      supabase.from('service_jobs').update({ status }).eq('id', jobId).then();
-    }
   };
 
-  const addCustomer = (cust: Omit<Customer, 'id' | 'created_at' | 'total_spent' | 'pending_amount'>) => {
+  const addCustomer = async (cust: Omit<Customer, 'id' | 'created_at' | 'total_spent' | 'pending_amount'>) => {
     const newCust: Customer = {
       ...cust,
       id: `cust-${Date.now()}`,
@@ -392,31 +383,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: new Date().toISOString().split('T')[0]
     };
     setCustomers(prev => [newCust, ...prev]);
-
-    if (supabase) {
-      supabase.from('customers').insert({
-        name: cust.name,
-        phone: cust.phone,
-        email: cust.email || null,
-        address: cust.address || null,
-        notes: cust.notes || null,
-        status: 'active'
-      }).then();
-    }
   };
 
-  const addProduct = (prod: Omit<Product, 'id' | 'created_at' | 'status'>) => {
-    const status = prod.stock_quantity <= 0 ? 'Out of Stock' : (prod.stock_quantity <= prod.minimum_stock ? 'Low Stock' : 'In Stock');
-    const newProd: Product = {
-      ...prod,
-      id: `prod-${Date.now()}`,
-      status,
-      created_at: new Date().toISOString().split('T')[0]
-    };
-    setProducts(prev => [newProd, ...prev]);
-
+  const addProduct = async (prod: Omit<Product, 'id' | 'created_at' | 'status'>) => {
     if (supabase) {
-      supabase.from('products').insert({
+      const { data: created, error } = await supabase.from('products').insert({
         name: prod.name,
         category: prod.category,
         sku: prod.sku,
@@ -427,39 +398,90 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         stock_quantity: prod.stock_quantity,
         minimum_stock_level: prod.minimum_stock,
         status: 'active'
-      }).then();
+      }).select().single();
+
+      if (error) {
+        console.error('Failed to add product:', error);
+        throw error;
+      }
+
+      if (created && prod.stock_quantity > 0) {
+        await supabase.from('inventory_transactions').insert({
+          product_id: created.id,
+          type: 'stock_in',
+          quantity: prod.stock_quantity,
+          notes: 'Initial stock'
+        });
+      }
+
+      await fetchSupabaseData();
+    } else {
+      const status = prod.stock_quantity <= 0 ? 'Out of Stock' : (prod.stock_quantity <= prod.minimum_stock ? 'Low Stock' : 'In Stock');
+      const newProd: Product = {
+        ...prod,
+        id: `prod-${Date.now()}`,
+        status,
+        created_at: new Date().toISOString().split('T')[0]
+      };
+      setProducts(prev => [newProd, ...prev]);
     }
   };
 
-  const recordPayment = (pendingId: string, amountPaid: number, paymentMethod: any) => {
-    const item = pendingPayments.find(p => p.id === pendingId);
-    if (!item) return;
+  const recordPayment = async (pendingId: string, amountPaid: number, paymentMethod: any) => {
+    if (supabase) {
+      const { error: payErr } = await supabase.from('payments').insert({
+        amount: amountPaid,
+        payment_method: paymentMethod || 'UPI',
+        status: 'completed',
+        notes: `Payment for ${pendingId}`
+      });
 
-    const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
-    addTransaction({
-      date: todayStr,
-      description: `Payment for ${item.invoice} (${item.customer})`,
-      category: 'Pending Payment Collected',
-      type: 'income',
-      payment_method: paymentMethod || 'UPI',
-      amount: amountPaid,
-      status: 'Paid',
-      customer_name: item.customer
-    });
+      if (payErr) {
+        console.error('Failed to record payment:', payErr);
+        throw payErr;
+      }
 
-    if (amountPaid >= item.amount) {
-      setPendingPayments(prev => prev.filter(p => p.id !== pendingId));
+      const { error: txErr } = await supabase.from('transactions').insert({
+        type: 'income',
+        amount: amountPaid,
+        reference_type: 'payment',
+        description: `Payment collected (${paymentMethod})`,
+        payment_method: paymentMethod || 'UPI',
+        status: 'completed'
+      });
+      if (txErr) console.error('Failed to insert transaction entry:', txErr);
+
+      await fetchSupabaseData();
     } else {
-      setPendingPayments(prev => prev.map(p => {
-        if (p.id === pendingId) {
-          return {
-            ...p,
-            amount: p.amount - amountPaid,
-            status: 'Partial'
-          };
-        }
-        return p;
-      }));
+      const item = pendingPayments.find(p => p.id === pendingId);
+      if (!item) return;
+
+      const todayStr = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'short' })}`;
+      await addTransaction({
+        date: todayStr,
+        description: `Payment for ${item.invoice} (${item.customer})`,
+        category: 'Pending Payment Collected',
+        type: 'income',
+        payment_method: paymentMethod || 'UPI',
+        amount: amountPaid,
+        status: 'Paid',
+        customer_name: item.customer
+      });
+
+      if (amountPaid >= item.amount) {
+        setPendingPayments(prev => prev.filter(p => p.id !== pendingId));
+      } else {
+        setPendingPayments(prev => prev.map(p => {
+          if (p.id === pendingId) {
+            return {
+              ...p,
+              amount: p.amount - amountPaid,
+              status: 'Partial'
+            };
+          }
+          return p;
+        }));
+      }
     }
   };
 
@@ -514,7 +536,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       recordPayment,
       toggleTaskStatus,
       resetToDemoData,
-      isSupabaseLive
+      isSupabaseLive,
+      refreshData: fetchSupabaseData
     }}>
       {children}
     </DataContext.Provider>

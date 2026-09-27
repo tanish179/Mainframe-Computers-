@@ -23,24 +23,28 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ isOpen, onClos
     'Maintenance', 'Tools', 'Other'
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !amount) return;
 
-    addExpense({
-      description,
-      category,
-      amount: parseFloat(amount),
-      payment_method: paymentMethod,
-      vendor,
-      notes
-    });
+    try {
+      await addExpense({
+        description,
+        category,
+        amount: parseFloat(amount),
+        payment_method: paymentMethod,
+        vendor,
+        notes
+      });
 
-    onClose();
-    setDescription('');
-    setAmount('');
-    setVendor('');
-    setNotes('');
+      onClose();
+      setDescription('');
+      setAmount('');
+      setVendor('');
+      setNotes('');
+    } catch (err: any) {
+      alert(`Expense recording error: ${err.message || err}`);
+    }
   };
 
   return (

@@ -15,26 +15,38 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose }) =
   const [category, setCategory] = useState('Laptop Sale');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('UPI');
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName || !amount) return;
+    if (!amount) return;
 
-    addSale({
-      customer_name: customerName,
-      items_description: itemsDescription || 'Computer Hardware & Peripherals',
-      amount: parseFloat(amount),
-      payment_method: paymentMethod,
-      category
-    });
+    try {
+      const items = selectedProductId
+        ? [{ product_id: selectedProductId, name: itemsDescription, quantity: 1, unit_price: parseFloat(amount) }]
+        : [];
 
-    onClose();
-    setCustomerName('');
-    setItemsDescription('');
-    setAmount('');
+      await addSale({
+        customer_name: customerName || undefined,
+        items_description: itemsDescription || 'Computer Hardware & Peripherals',
+        amount: parseFloat(amount),
+        payment_method: paymentMethod,
+        category,
+        items
+      });
+
+      onClose();
+      setCustomerName('');
+      setItemsDescription('');
+      setAmount('');
+      setSelectedProductId(null);
+    } catch (err: any) {
+      alert(`Sale recording error: ${err.message || err}`);
+    }
   };
 
-  const handleSelectProduct = (prodName: string, price: number, cat: string) => {
+  const handleSelectProduct = (prodId: string, prodName: string, price: number, cat: string) => {
+    setSelectedProductId(prodId);
     setItemsDescription(prodName);
     setAmount(price.toString());
     setCategory(cat.includes('Laptop') ? 'Laptop Sale' : cat.includes('Cartridge') ? 'Cartridge Refill' : 'Accessories');
@@ -44,20 +56,42 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose }) =
     <ModalBackdrop
       isOpen={isOpen}
       onClose={onClose}
-      title="Create New Customer Sale"
-      subtitle="POS entry for computers, accessories, peripherals & consumables"
+      title="Create New Sale"
+      subtitle="POS entry for computers, accessories, peripherals & services"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Customer */}
+        {/* Quick select from in-stock catalog */}
+        <div>
+          <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            Quick Fill from Popular Inventory
+          </label>
+          <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200/60">
+            {products.slice(0, 6).map(p => (
+              <button
+                type="button"
+                key={p.id}
+                onClick={() => handleSelectProduct(p.id, p.name, p.selling_price, p.category)}
+                className={`text-[10.5px] px-2 py-0.5 border rounded transition-colors ${
+                  selectedProductId === p.id 
+                    ? 'bg-[#087443] text-white border-[#087443]' 
+                    : 'bg-white border-slate-200 text-slate-700 hover:border-[#087443] hover:text-[#087443]'
+                }`}
+              >
+                + {p.name.split(' ')[0]} {p.model || ''} (₹{p.selling_price})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Customer (Optional) */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Customer Name *
+            Customer Name (Optional)
           </label>
           <input
             type="text"
-            required
             list="customer-suggestions"
-            placeholder="Type or select customer name"
+            placeholder="Walk-in Customer / Optional Name"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#087443]/20 focus:border-[#087443]"
@@ -69,25 +103,6 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose }) =
           </datalist>
         </div>
 
-        {/* Quick select from in-stock catalog */}
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            Quick Fill from Popular Inventory
-          </label>
-          <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200/60">
-            {products.slice(0, 6).map(p => (
-              <button
-                type="button"
-                key={p.id}
-                onClick={() => handleSelectProduct(p.name, p.selling_price, p.category)}
-                className="text-[10.5px] px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 hover:border-[#087443] hover:text-[#087443] transition-colors"
-              >
-                + {p.name.split(' ')[0]} {p.model || ''} (₹{p.selling_price})
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Items Description */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -96,7 +111,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose }) =
           <input
             type="text"
             required
-            placeholder="e.g. Dell Latitude 7490 + Logitech Wireless Combo"
+            placeholder="e.g. Windows Installation / Dell Latitude 7490"
             value={itemsDescription}
             onChange={(e) => setItemsDescription(e.target.value)}
             className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#087443]/20 focus:border-[#087443]"
@@ -132,6 +147,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose }) =
               <option value="Desktop Sale">Desktop Sale</option>
               <option value="PC Build">Custom PC Build</option>
               <option value="Accessories">Accessories & Peripherals</option>
+              <option value="Software Service">Software / OS Installation</option>
               <option value="Cartridge Refill">Cartridge & Toner Refill</option>
               <option value="CCTV Installation">CCTV Installation & Kit</option>
             </select>
