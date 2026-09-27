@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Customer, 
   Supplier, 
@@ -186,6 +186,74 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  // Debounce ref for batching rapid Realtime events
+  const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const debouncedRefetch = useCallback(() => {
+    // Cancel any pending refetch timer
+    if (refetchTimerRef.current) {
+      clearTimeout(refetchTimerRef.current);
+    }
+    // Wait 500ms of quiet before doing full refetch
+    refetchTimerRef.current = setTimeout(() => {
+      fetchSupabaseData();
+      refetchTimerRef.current = null;
+    }, 500);
+  }, [fetchSupabaseData]);
+
+  // Helper: instantly inject a transaction from Realtime payload
+  const injectRealtimeTransaction = useCallback((record: any) => {
+    if (!record || !record.id) return;
+    const mapped: Transaction = {
+      id: record.id,
+      date: record.transaction_date
+        ? record.transaction_date.split('T')[0]
+        : new Date().toISOString().split('T')[0],
+      description: record.description || 'Transaction',
+      category: record.type === 'income' ? 'Sales' : 'Maintenance',
+      type: record.type === 'income' ? 'income' : 'expense',
+      payment_method: record.payment_method || 'cash',
+      amount: Number(record.amount || 0),
+      status: 'Paid',
+      created_at: record.created_at || new Date().toISOString(),
+    };
+    setTransactions(prev => {
+      // Don't add duplicates
+      if (prev.some(t => t.id === mapped.id)) return prev;
+      return [mapped, ...prev];
+    });
+  }, []);
+
+  // Helper: instantly update a product from Realtime payload
+  const injectRealtimeProduct = useCallback((record: any) => {
+    if (!record || !record.id) return;
+    setProducts(prev => {
+      const idx = prev.findIndex(p => p.id === record.id);
+      const mapped: Product = {
+        id: record.id,
+        name: record.name,
+        category: record.category,
+        sku: record.sku,
+        brand: record.brand,
+        model: record.model,
+        purchase_price: Number(record.purchase_price || 0),
+        selling_price: Number(record.selling_price || 0),
+        stock_quantity: record.stock_quantity,
+        minimum_stock: record.minimum_stock_level || 2,
+        supplier_id: record.supplier_id,
+        status: record.stock_quantity <= 0 ? 'Out of Stock' : (record.stock_quantity <= (record.minimum_stock_level || 2) ? 'Low Stock' : 'In Stock'),
+        created_at: record.created_at,
+      };
+      if (idx >= 0) {
+        // Update existing product in-place
+        const updated = [...prev];
+        updated[idx] = mapped;
+        return updated;
+      }
+      return [mapped, ...prev];
+    });
+  }, []);
+
   // Set up Supabase Realtime Subscriptions & initial fetch
   useEffect(() => {
     fetchSupabaseData();
@@ -195,19 +263,59 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const channel = client
       .channel('public_db_realtime_changes')
+      // Instant injection for transactions
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public' },
-        () => {
-          fetchSupabaseData();
+        { event: 'INSERT', schema: 'public', table: 'transactions' },
+        (payload) => {
+          injectRealtimeTransaction(payload.new);
+          debouncedRefetch();
         }
+      )
+      // Instant injection for product stock updates
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        (payload) => {
+          if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
+            injectRealtimeProduct(payload.new);
+          }
+          debouncedRefetch();
+        }
+      )
+      // All other table changes → just debounced refetch
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sales' },
+        () => { debouncedRefetch(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sale_items' },
+        () => { debouncedRefetch(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'payments' },
+        () => { debouncedRefetch(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'expenses' },
+        () => { debouncedRefetch(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'inventory_transactions' },
+        () => { debouncedRefetch(); }
       )
       .subscribe();
 
     return () => {
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
       client.removeChannel(channel);
     };
-  }, [fetchSupabaseData, isSupabaseLive]);
+  }, [fetchSupabaseData, isSupabaseLive, debouncedRefetch, injectRealtimeTransaction, injectRealtimeProduct]);
 
   // Sync to localStorage
   useEffect(() => {
